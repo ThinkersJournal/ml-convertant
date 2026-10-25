@@ -4,8 +4,8 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 
 | # | Row | Status |
 |---|-----|--------|
-| 0 | Setup, design page | this PR |
-| 1 | CI on hosted runners (fmt, clippy -D, test --locked, deny, audit, doc); PM then requires them | next |
+| 0 | Setup, design page | this PR (#1) |
+| 1 | CI on hosted runners (merged #2) | done |
 | 2 | Workspace skeleton + `ml-convertant-core` (`ErrorReport`, `Conversion`) | after 1 |
 | 3 | Keystone: f32 <-> Q8_0, bound + llama.cpp golden vectors | after 2 |
 | 4 | Q4_0 | |
