@@ -1,0 +1,4 @@
+# Explicit version, no aliases (portfolio ruling 2026-08-21): CI and developers build with the same compiler.
+[toolchain]
+channel = "1.98.0"
+components = ["clippy", "rustfmt"]
