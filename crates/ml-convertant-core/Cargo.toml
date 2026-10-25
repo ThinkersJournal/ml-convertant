@@ -1,0 +1,12 @@
+[package]
+name = "ml-convertant-core"
+description = "Error-measurement contract and conversion trait shared by the ml-convertant crates."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "conversion", "error"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true

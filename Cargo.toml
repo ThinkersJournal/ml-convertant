@@ -1,12 +1,26 @@
-[package]
-name = "ml-convertant"
-version = "0.0.1"
+[workspace]
+members = [".", "crates/*"]
+
+[workspace.package]
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.95"
 authors = ["Eric Evans <ciresnave@gmail.com>"]
-description = "Reserved name: conversions of machine learning model data (quantization, packing, merging). Placeholder, no code yet."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ThinkersJournal/ml-convertant"
+
+[package]
+name = "ml-convertant"
+description = "Conversions of machine learning model data (quantization, packing, merging) with measured error."
 readme = "README.md"
 keywords = ["machine-learning", "quantization", "conversion", "model"]
 categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "crates/ml-convertant-core", version = "0.1.0" }
