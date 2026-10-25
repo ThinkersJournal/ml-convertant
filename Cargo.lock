@@ -27,7 +27,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "ml-convertant-core",
  "ml-convertant-ggml",
@@ -35,11 +35,11 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-core"
-version = "0.1.2"
+version = "0.1.3"
 
 [[package]]
 name = "ml-convertant-ggml"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "half",
  "ml-convertant-core",

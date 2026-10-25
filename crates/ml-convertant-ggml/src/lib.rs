@@ -1,4 +1,4 @@
-//! ggml block formats with measured error. Currently [`Q8_0`].
+//! ggml block formats with measured error: [`Q8_0`] and [`Q4_0`].
 //!
 //! # Q8_0
 //!
@@ -31,23 +31,28 @@
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
 use std::fmt;
 
+mod q4_0;
+pub use q4_0::{Q4_0, Q4_0_BLOCK_BYTES, QK4_0, dequantize_q4_0, q4_0_block_bound, quantize_q4_0};
+
 /// Elements per Q8_0 block.
 pub const QK8_0: usize = 32;
 /// Bytes per Q8_0 block: 2 (f16 scale) + 32 (`i8`).
 pub const Q8_0_BLOCK_BYTES: usize = 2 + QK8_0;
 
-/// Why a Q8_0 conversion failed.
+/// Why a block-format conversion failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Q8_0Error {
+pub enum BlockError {
     /// Input length is not a multiple of [`QK8_0`].
     NotBlockAligned {
         /// Input length in elements.
         len: usize,
     },
-    /// Encoded length is not a multiple of [`Q8_0_BLOCK_BYTES`].
+    /// Encoded length is not a multiple of the format's block size.
     BadByteLength {
         /// Input length in bytes.
         len: usize,
+        /// Bytes per block of the format.
+        block_bytes: usize,
     },
     /// Input element at `index` is NaN or infinite.
     NonFinite {
@@ -63,14 +68,14 @@ pub enum Q8_0Error {
     Measure(LengthMismatch),
 }
 
-impl fmt::Display for Q8_0Error {
+impl fmt::Display for BlockError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NotBlockAligned { len } => {
                 write!(f, "{len} elements is not a multiple of {QK8_0}")
             }
-            Self::BadByteLength { len } => {
-                write!(f, "{len} bytes is not a multiple of {Q8_0_BLOCK_BYTES}")
+            Self::BadByteLength { len, block_bytes } => {
+                write!(f, "{len} bytes is not a multiple of {block_bytes}")
             }
             Self::NonFinite { index } => write!(f, "element {index} is not finite"),
             Self::SubnormalScale { block } => {
@@ -81,7 +86,12 @@ impl fmt::Display for Q8_0Error {
     }
 }
 
-impl std::error::Error for Q8_0Error {}
+impl std::error::Error for BlockError {}
+
+/// Error type of [`Q8_0`].
+pub type Q8_0Error = BlockError;
+/// Error type of [`Q4_0`].
+pub type Q4_0Error = BlockError;
 
 /// Encodes `x` (a multiple of 32 finite values) to Q8_0 bytes.
 pub fn quantize_q8_0(x: &[f32]) -> Result<Vec<u8>, Q8_0Error> {
@@ -108,7 +118,10 @@ pub fn quantize_q8_0(x: &[f32]) -> Result<Vec<u8>, Q8_0Error> {
 /// Decodes Q8_0 bytes to f32.
 pub fn dequantize_q8_0(bytes: &[u8]) -> Result<Vec<f32>, Q8_0Error> {
     if !bytes.len().is_multiple_of(Q8_0_BLOCK_BYTES) {
-        return Err(Q8_0Error::BadByteLength { len: bytes.len() });
+        return Err(Q8_0Error::BadByteLength {
+            len: bytes.len(),
+            block_bytes: Q8_0_BLOCK_BYTES,
+        });
     }
     let mut out = Vec::with_capacity(bytes.len() / Q8_0_BLOCK_BYTES * QK8_0);
     for block in bytes.as_chunks::<Q8_0_BLOCK_BYTES>().0 {
@@ -181,7 +194,10 @@ mod tests {
         );
         assert_eq!(
             dequantize_q8_0(&[0; 33]),
-            Err(Q8_0Error::BadByteLength { len: 33 })
+            Err(Q8_0Error::BadByteLength {
+                len: 33,
+                block_bytes: 34
+            })
         );
     }
 
