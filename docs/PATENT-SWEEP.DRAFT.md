@@ -4,7 +4,7 @@ Date started: 2026-10-25; Run by: ml-convertant lane, Claude Sonnet 5.5; Method:
 
 Process: `C:\Projects\PATENT-SWEEP-PROCESS.md` (CireSnave, board 286 item 1).
 
-**Status: the search was blocked and the hits are UNREAD.** Google Patents rate-limited this machine's IP
+**Status: the search was blocked and most hits are UNREAD (three read, see Hits).** Google Patents rate-limited this machine's IP
 (HTTP 503) after the first two queries, and every other source tried refused or could not be driven
 without a browser (see "Source status"). Nothing below is a clearance. Per the PM (2026-10-25): *"If all stay
 blocked, the sweep stays UNREAD for those hits and nothing publishes."* This file exists so the work done so
@@ -55,7 +55,8 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 | FreePatentsOnline | HTTP | HTTP 403. |
 | Espacenet (`worldwide.espacenet.com`) | HTTP | HTTP 403 (as other lanes reported). |
 | WIPO Patentscope | HTTP | Landing page loads; the search is a JavaServer Faces session application that cannot be driven without a browser. Not usable here. |
-| USPTO public search (`ppubs.uspto.gov`) | HTTP | Direct document URL returned 404; the search needs a browser session. Other lanes found scanned PDFs readable only as page images. Not attempted further. |
+| USPTO image server (`image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/<number>`) | web fetch tool (saves the PDF) + PyMuPDF | **Worked** for US grants and applications (PM's route): scanned pages, claims read as images. US documents only. |
+| USPTO public search (`ppubs.uspto.gov`) | HTTP | Direct document URL returned 404; the search needs a browser session. |
 | PatentsView (`api.patentsview.org`) | HTTP | Returns an AWS WAF JavaScript challenge page, not data. The newer `search.patentsview.org` did not resolve. |
 | EPO publication server (`data.epo.org`) | HTTP | Landing page only; no full-text search. |
 | A real browser (Claude in Chrome, built-in browser) | tools | Not available in this session. A session that has one could finish the reading. |
@@ -71,12 +72,10 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 
 ## Leads (NOT read; no verdict)
 
-From Q1, the nearest by title (claims not yet read):
+Q1 produced three US leads; they are now READ and moved to Hits (H1 to H3). Still unread:
 
 | patent | title | assignee | why it is a lead |
 |---|---|---|---|
-| US12045307B2, US12412082B2 | Fine-grained per-vector scaling for neural network quantization | Nvidia | per-vector (16 to 64 elements) scale factors with a two-level scale scheme: near ideas 1, 2, 6 |
-| US20250117639A1 | Loss-error-aware quantization of a low-bit neural network | Intel | quantization minimizing a loss error: near idea 6's scale search |
 | EP4341862A1 | Low-rank adaptation of neural network models | (not yet identified) | LoRA; claims not seen; near idea 8 |
 | US12099930B2 | (TI) histogram tail-discard, moving-average maximum, power-of-two clip | Texas Instruments | inherited from the MLMF lane's sweep; they read its claims and found it clear against MLMF's old code, **not against us if we add calibration** (idea 11) |
 | US20230342613A1 | integer-only QAT | Alphaics | same: inherited from the MLMF lane; relevant only if idea 11 is built |
@@ -87,15 +86,37 @@ paper (Dettmers et al.) and implemented in bitsandbytes (MIT); AWQ is published 
 LoRA is published (Hu et al.) and PEFT is Apache-2.0. A published method can still be claimed by a patent filed
 earlier or by a different party; none of this clears anything.
 
-## Hits
+## Hits (read so far)
 
-None read yet. To complete the sweep, for each idea: run the documented queries, read the independent claims of
-the closest five hits in full with `tools/patent-claims.py`, quote the overlapping and the differing limitations,
-and give `clear`, `design-around` or `needs-review`. Any `needs-review` goes to the PM.
+Read on 2026-10-25 from the USPTO's scanned grant/publication PDFs (`image-ppubs.uspto.gov`, fetched with the
+web fetch tool, rendered with PyMuPDF, claim pages read as images). The independent claims were read in full.
+Google Patents was throttled, so these are not machine-converted text.
+
+| # | patent | title | assignee | claims read | overlap | our difference | verdict |
+|---|---|---|---|---|---|---|---|
+| H1 | US12045307B2 (priority 2020-08-28) | Fine-grained per-vector scaling for neural network quantization | Nvidia | indep. 1, 14, 17, 20 (all read in full) | Per-vector scale factors (a scale per vector of quantized parameters within one dimension), a coarse scale in dependents 5-7: the same two-level shape as our K-quants (ideas 4, 6) | Every independent claim requires **computing, with "a set of multipliers" operating "at the bitwidth", a vector dot-product value for each vector of quantized parameters, scaling that dot-product by the per-vector scale factor, and accumulating the scaled dot-products to produce each element of an output tensor** (claim 20: processing by a neural network model). We convert data; we compute no dot products and run no layer | clear |
+| H2 | US12412082B2 (continuation of H1) | Fine-grained per-vector scaling for neural network quantization | Nvidia | indep. 1, 16, 19 (all read in full) | Closest in structure: "computing, for each vector of parameters ..., a per-vector scale factor", "computing a coarse scale factor ... shared by at least two of the vectors", "reducing ... a bitwidth of each parameter ... according to a corresponding per-vector scale factor" with the bitwidth "also reduced according to the coarse scale factor": our K-quants store an integer sub-block scale and one f16 super-block factor | Every independent claim ends with "**processing the reduced bitwidth vectors of parameters using a set of multiplier circuits that operate at the reduced bitwidth in a layer of the neural network model to produce each element of a multi-dimensional output tensor**". We run no layer and have no multiplier circuits | clear for conversions |
+| H3 | US20250117639A1 (application, published 2025-04-10) | Loss-error-aware quantization of a low-bit neural network | Intel | indep. 1, 8, 15 and the means claim (read in full) | Quantizes network weights to low-bit weights | Requires partitioning the weights into a group to be quantized and a group "to be retrained", calculating a first loss and a second loss "with respect to a loss function", updating the retrained group from their difference, repeating the partition/quantize/retrain, and deploying; we quantize in one pass with no loss function and no retraining. An application; its claims may change before grant | clear |
+
+**Flag for the PM, outside this repository:** H1 and H2 are about the arithmetic of running a quantized layer
+(multiplier circuits at the reduced bitwidth, per-vector scaling of dot-products). That is the territory of
+Fuel's quantized matrix-multiplication kernels (`fuel-quantized` `vec_dot`, the W4A16 AWQ and NF4 kernels,
+the CUDA/Metal/Vulkan quantized paths), not of this project. Fuel's own sweep should read H1 and H2 against
+those kernels: their independent claims plausibly read on a per-block-scaled integer dot product in a
+neural-network layer. This record does not assess Fuel.
+
+If ML-ConvertAnt ever adds quantized matrix multiplication or inference, H1 and H2 must be re-read against that
+code: the limitation that makes them clear for conversions (a multiplier or dot-product step in a layer) would
+then be present.
+
+### Still unread
+
+US12099930B2 and US20230342613A1 (inherited from the MLMF lane; relevant only if idea 11 is built); EP4341862A1
+(LoRA; not a US document, needs Google Patents or Espacenet); and every hit that queries Q3 to Q16 would return.
 
 ## Limitations
 
-- Incomplete: see Status. The only patents examined are titles in two result lists; none was read.
+- Incomplete: see Status. Three patents were read (H1 to H3); the other queries never ran.
 - AI-assisted, machine-converted patent text (when it can be read); search coverage is whatever the sources
   return; the general web search tool is not a patent database.
 - Not legal advice; not a freedom-to-operate opinion. A lawyer's review is a separate, later purchase.
