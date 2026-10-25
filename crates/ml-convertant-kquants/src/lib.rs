@@ -1,4 +1,4 @@
-//! ggml K-quants with measured error. Currently [`Q4K`].
+//! ggml K-quants with measured error: [`Q4K`] and [`Q5K`].
 //!
 //! # Q4_K
 //!
@@ -22,6 +22,9 @@
 //! `|x + m1|` when `d1 == 0`; plus `2^-22` of the magnitudes involved for the f32 arithmetic.
 //! [`q4_k_bound`] computes the maximum over the tensor.
 //!
+//! Q5_K is the same scheme with 5-bit levels (`0..=31`): 176 bytes per super-block, the fifth bit of each
+//! level in a 32-byte `qh` array; its bound has `31 * d1` in place of `15 * d1`.
+//!
 //! Non-finite inputs are errors.
 
 use half::f16;
@@ -32,6 +35,8 @@ use std::fmt;
 pub const QK_K: usize = 256;
 /// Bytes per Q4_K super-block: 2 + 2 + 12 + 128.
 pub const Q4_K_BLOCK_BYTES: usize = 2 + 2 + 12 + QK_K / 2;
+/// Bytes per Q5_K super-block: 2 + 2 + 12 + 32 + 128.
+pub const Q5_K_BLOCK_BYTES: usize = 2 + 2 + 12 + QK_K / 8 + QK_K / 2;
 
 /// Why a K-quant conversion failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -188,6 +193,89 @@ fn check_finite(x: &[f32]) -> Result<(), KQuantError> {
     }
 }
 
+/// The part of `quantize_row_q{4,5}_K_ref` shared by both formats: per-sub-block fits, 6-bit scales and
+/// minimums packed into 12 bytes, the f16 super-block factors, and the final levels `0..=nmax` computed
+/// against the decoded (rounded) factors.
+fn encode_scales_and_levels(
+    sb: &[f32; QK_K],
+    nmax: i32,
+    rmin: f32,
+    rdelta: f32,
+    nstep: i32,
+) -> ([u8; QK_K], [u8; 12], f16, f16) {
+    let mut l = [0u8; QK_K];
+    let mut laux = [0u8; 32];
+    let mut weights = [0.0f32; 32];
+    let mut mins = [0.0f32; QK_K / 32];
+    let mut scales = [0.0f32; QK_K / 32];
+    let (mut max_scale, mut max_min) = (0.0f32, 0.0f32);
+    for j in 0..QK_K / 32 {
+        let xs = &sb[32 * j..32 * j + 32];
+        let mut sum_x2 = 0.0f32;
+        for v in xs {
+            sum_x2 += v * v;
+        }
+        let av_x = (sum_x2 / 32.0).sqrt();
+        for (w, v) in weights.iter_mut().zip(xs) {
+            *w = av_x + v.abs();
+        }
+        let (scale, min) = make_qkx2_quants(
+            nmax,
+            xs,
+            &weights,
+            &mut l[32 * j..32 * j + 32],
+            &mut laux,
+            rmin,
+            rdelta,
+            nstep,
+            false,
+        );
+        scales[j] = scale;
+        mins[j] = min;
+        if scale > max_scale {
+            max_scale = scale;
+        }
+        if min > max_min {
+            max_min = min;
+        }
+    }
+    let inv_scale = if max_scale > 0.0 {
+        63.0 / max_scale
+    } else {
+        0.0
+    };
+    let inv_min = if max_min > 0.0 { 63.0 / max_min } else { 0.0 };
+    let mut packed = [0u8; 12];
+    for j in 0..QK_K / 32 {
+        // C stores nearest_int into a uint8_t before the MIN(63, .).
+        let ls = (nearest_int(inv_scale * scales[j]) as u8).min(63);
+        let lm = (nearest_int(inv_min * mins[j]) as u8).min(63);
+        if j < 4 {
+            packed[j] = ls;
+            packed[j + 4] = lm;
+        } else {
+            packed[j + 4] = (ls & 0xF) | ((lm & 0xF) << 4);
+            packed[j - 4] |= (ls >> 4) << 6;
+            packed[j] |= (lm >> 4) << 6;
+        }
+    }
+    let d16 = f16::from_f32(max_scale / 63.0);
+    let dmin16 = f16::from_f32(max_min / 63.0);
+    for j in 0..QK_K / 32 {
+        let (sc, m) = get_scale_min_k4(j, &packed);
+        let d = d16.to_f32() * f32::from(sc);
+        if d == 0.0 {
+            continue;
+        }
+        let dm = dmin16.to_f32() * f32::from(m);
+        for ii in 0..32 {
+            let lv = nearest_int((sb[32 * j + ii] + dm) / d);
+            l[32 * j + ii] = lv.clamp(0, nmax) as u8;
+        }
+    }
+    (l, packed, d16, dmin16)
+}
+
 /// Encodes `x` (a multiple of 256 finite values) to Q4_K bytes.
 pub fn quantize_q4_k(x: &[f32]) -> Result<Vec<u8>, KQuantError> {
     if !x.len().is_multiple_of(QK_K) {
@@ -196,76 +284,7 @@ pub fn quantize_q4_k(x: &[f32]) -> Result<Vec<u8>, KQuantError> {
     check_finite(x)?;
     let mut out = Vec::with_capacity(x.len() / QK_K * Q4_K_BLOCK_BYTES);
     for sb in x.as_chunks::<QK_K>().0 {
-        let mut l = [0u8; QK_K];
-        let mut laux = [0u8; 32];
-        let mut weights = [0.0f32; 32];
-        let mut mins = [0.0f32; QK_K / 32];
-        let mut scales = [0.0f32; QK_K / 32];
-        let (mut max_scale, mut max_min) = (0.0f32, 0.0f32);
-        for j in 0..QK_K / 32 {
-            let xs = &sb[32 * j..32 * j + 32];
-            let mut sum_x2 = 0.0f32;
-            for v in xs {
-                sum_x2 += v * v;
-            }
-            let av_x = (sum_x2 / 32.0).sqrt();
-            for (w, v) in weights.iter_mut().zip(xs) {
-                *w = av_x + v.abs();
-            }
-            let (scale, min) = make_qkx2_quants(
-                15,
-                xs,
-                &weights,
-                &mut l[32 * j..32 * j + 32],
-                &mut laux,
-                -1.0,
-                0.1,
-                20,
-                false,
-            );
-            scales[j] = scale;
-            mins[j] = min;
-            if scale > max_scale {
-                max_scale = scale;
-            }
-            if min > max_min {
-                max_min = min;
-            }
-        }
-        let inv_scale = if max_scale > 0.0 {
-            63.0 / max_scale
-        } else {
-            0.0
-        };
-        let inv_min = if max_min > 0.0 { 63.0 / max_min } else { 0.0 };
-        let mut packed = [0u8; 12];
-        for j in 0..QK_K / 32 {
-            // C stores nearest_int into a uint8_t before the MIN(63, .).
-            let ls = (nearest_int(inv_scale * scales[j]) as u8).min(63);
-            let lm = (nearest_int(inv_min * mins[j]) as u8).min(63);
-            if j < 4 {
-                packed[j] = ls;
-                packed[j + 4] = lm;
-            } else {
-                packed[j + 4] = (ls & 0xF) | ((lm & 0xF) << 4);
-                packed[j - 4] |= (ls >> 4) << 6;
-                packed[j] |= (lm >> 4) << 6;
-            }
-        }
-        let d16 = f16::from_f32(max_scale / 63.0);
-        let dmin16 = f16::from_f32(max_min / 63.0);
-        for j in 0..QK_K / 32 {
-            let (sc, m) = get_scale_min_k4(j, &packed);
-            let d = d16.to_f32() * f32::from(sc);
-            if d == 0.0 {
-                continue;
-            }
-            let dm = dmin16.to_f32() * f32::from(m);
-            for ii in 0..32 {
-                let lv = nearest_int((sb[32 * j + ii] + dm) / d);
-                l[32 * j + ii] = lv.clamp(0, 15) as u8;
-            }
-        }
+        let (l, packed, d16, dmin16) = encode_scales_and_levels(sb, 15, -1.0, 0.1, 20);
         out.extend_from_slice(&d16.to_bits().to_le_bytes());
         out.extend_from_slice(&dmin16.to_bits().to_le_bytes());
         out.extend_from_slice(&packed);
@@ -274,6 +293,44 @@ pub fn quantize_q4_k(x: &[f32]) -> Result<Vec<u8>, KQuantError> {
                 out.push(run[k] | (run[k + 32] << 4));
             }
         }
+    }
+    Ok(out)
+}
+
+/// Encodes `x` (a multiple of 256 finite values) to Q5_K bytes.
+pub fn quantize_q5_k(x: &[f32]) -> Result<Vec<u8>, KQuantError> {
+    if !x.len().is_multiple_of(QK_K) {
+        return Err(KQuantError::NotBlockAligned { len: x.len() });
+    }
+    check_finite(x)?;
+    let mut out = Vec::with_capacity(x.len() / QK_K * Q5_K_BLOCK_BYTES);
+    for sb in x.as_chunks::<QK_K>().0 {
+        let (l, packed, d16, dmin16) = encode_scales_and_levels(sb, 31, -0.5, 0.1, 15);
+        out.extend_from_slice(&d16.to_bits().to_le_bytes());
+        out.extend_from_slice(&dmin16.to_bits().to_le_bytes());
+        out.extend_from_slice(&packed);
+        let mut qh = [0u8; QK_K / 8];
+        let mut ql = [0u8; QK_K / 2];
+        let (mut m1, mut m2) = (1u8, 2u8);
+        for (run, n) in (0..QK_K).step_by(64).enumerate() {
+            for j in 0..32 {
+                let mut l1 = l[n + j];
+                if l1 > 15 {
+                    l1 -= 16;
+                    qh[j] |= m1;
+                }
+                let mut l2 = l[n + j + 32];
+                if l2 > 15 {
+                    l2 -= 16;
+                    qh[j] |= m2;
+                }
+                ql[run * 32 + j] = l1 | (l2 << 4);
+            }
+            m1 = m1.wrapping_shl(2);
+            m2 = m2.wrapping_shl(2);
+        }
+        out.extend_from_slice(&qh);
+        out.extend_from_slice(&ql);
     }
     Ok(out)
 }
@@ -303,15 +360,56 @@ pub fn dequantize_q4_k(bytes: &[u8]) -> Result<Vec<f32>, KQuantError> {
     Ok(out)
 }
 
-/// The worst-case |x - x'| over `x`, given its Q4_K encoding `bytes` (see the crate docs).
-pub fn q4_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
+/// Decodes Q5_K bytes to f32.
+pub fn dequantize_q5_k(bytes: &[u8]) -> Result<Vec<f32>, KQuantError> {
+    if !bytes.len().is_multiple_of(Q5_K_BLOCK_BYTES) {
+        return Err(KQuantError::BadByteLength {
+            len: bytes.len(),
+            block_bytes: Q5_K_BLOCK_BYTES,
+        });
+    }
+    let mut out = Vec::with_capacity(bytes.len() / Q5_K_BLOCK_BYTES * QK_K);
+    for block in bytes.as_chunks::<Q5_K_BLOCK_BYTES>().0 {
+        let d = f16::from_bits(u16::from_le_bytes([block[0], block[1]])).to_f32();
+        let min = f16::from_bits(u16::from_le_bytes([block[2], block[3]])).to_f32();
+        let scales: &[u8; 12] = block[4..16].try_into().expect("12 bytes");
+        let qh = &block[16..16 + QK_K / 8];
+        let (mut u1, mut u2) = (1u8, 2u8);
+        for (run, ql) in block[16 + QK_K / 8..]
+            .as_chunks::<32>()
+            .0
+            .iter()
+            .enumerate()
+        {
+            let (sc, m) = get_scale_min_k4(2 * run, scales);
+            let (d1, m1) = (d * f32::from(sc), min * f32::from(m));
+            let (sc, m) = get_scale_min_k4(2 * run + 1, scales);
+            let (d2, m2) = (d * f32::from(sc), min * f32::from(m));
+            out.extend(
+                ql.iter().zip(qh).map(|(&b, &h)| {
+                    d1 * f32::from((b & 0xF) + if h & u1 != 0 { 16 } else { 0 }) - m1
+                }),
+            );
+            out.extend(
+                ql.iter().zip(qh).map(|(&b, &h)| {
+                    d2 * f32::from((b >> 4) + if h & u2 != 0 { 16 } else { 0 }) - m2
+                }),
+            );
+            u1 = u1.wrapping_shl(2);
+            u2 = u2.wrapping_shl(2);
+        }
+    }
+    Ok(out)
+}
+
+fn k4_bound(x: &[f32], bytes: &[u8], block_bytes: usize, nmax: f64) -> Result<f64, KQuantError> {
     if !x.len().is_multiple_of(QK_K) {
         return Err(KQuantError::NotBlockAligned { len: x.len() });
     }
-    if bytes.len() != x.len() / QK_K * Q4_K_BLOCK_BYTES {
+    if bytes.len() != x.len() / QK_K * block_bytes {
         return Err(KQuantError::BadByteLength {
             len: bytes.len(),
-            block_bytes: Q4_K_BLOCK_BYTES,
+            block_bytes,
         });
     }
     let slack = 2f64.powi(-22);
@@ -320,7 +418,7 @@ pub fn q4_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
         .as_chunks::<QK_K>()
         .0
         .iter()
-        .zip(bytes.as_chunks::<Q4_K_BLOCK_BYTES>().0)
+        .zip(bytes.chunks_exact(block_bytes))
     {
         let d = f64::from(f16::from_bits(u16::from_le_bytes([block[0], block[1]])).to_f32());
         let dmin = f64::from(f16::from_bits(u16::from_le_bytes([block[2], block[3]])).to_f32());
@@ -328,7 +426,7 @@ pub fn q4_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
         for j in 0..QK_K / 32 {
             let (sc, m) = get_scale_min_k4(j, scales);
             let (d1, m1) = (d * f64::from(sc), dmin * f64::from(m));
-            let (lo, hi) = (-m1, 15.0 * d1 - m1);
+            let (lo, hi) = (-m1, nmax * d1 - m1);
             for &v in &sb[32 * j..32 * j + 32] {
                 let v = f64::from(v);
                 let err = if d1 == 0.0 {
@@ -347,6 +445,16 @@ pub fn q4_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
     Ok(worst)
 }
 
+/// The worst-case |x - x'| over `x`, given its Q4_K encoding `bytes` (see the crate docs).
+pub fn q4_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
+    k4_bound(x, bytes, Q4_K_BLOCK_BYTES, 15.0)
+}
+
+/// The worst-case |x - x'| over `x`, given its Q5_K encoding `bytes` (see the crate docs).
+pub fn q5_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
+    k4_bound(x, bytes, Q5_K_BLOCK_BYTES, 31.0)
+}
+
 /// f32 -> Q4_K, reporting the error of the round trip against the input.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Q4K;
@@ -360,6 +468,26 @@ impl Conversion for Q4K {
         let output = quantize_q4_k(input)?;
         let decoded = dequantize_q4_k(&output)?;
         let bound = q4_k_bound(input, &output)?;
+        let report = ErrorReport::measure(input, &decoded)
+            .map_err(KQuantError::Measure)?
+            .with_bound(bound);
+        Ok(Converted { output, report })
+    }
+}
+
+/// f32 -> Q5_K, reporting the error of the round trip against the input.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Q5K;
+
+impl Conversion for Q5K {
+    type Input = [f32];
+    type Output = Vec<u8>;
+    type Error = KQuantError;
+
+    fn convert(&self, input: &[f32]) -> Result<Converted<Vec<u8>>, KQuantError> {
+        let output = quantize_q5_k(input)?;
+        let decoded = dequantize_q5_k(&output)?;
+        let bound = q5_k_bound(input, &output)?;
         let report = ErrorReport::measure(input, &decoded)
             .map_err(KQuantError::Measure)?
             .with_bound(bound);
@@ -456,5 +584,37 @@ mod tests {
             assert_eq!(c.report.within_bound(), Some(true), "round {round}");
             assert!(c.report.is_clean());
         }
+    }
+
+    #[test]
+    fn q5_layout_and_round_trip() {
+        assert_eq!(Q5_K_BLOCK_BYTES, 176);
+        let mut st = 21u64;
+        for round in 0..40usize {
+            let scale = 10f32.powi((round % 6) as i32 - 3);
+            let v: Vec<f32> = (0..512).map(|_| lcg(&mut st) * scale).collect();
+            let c = Q5K.convert(&v).unwrap();
+            assert_eq!(c.output.len(), 2 * Q5_K_BLOCK_BYTES);
+            assert_eq!(c.report.within_bound(), Some(true), "round {round}");
+            assert!(c.report.is_clean());
+            // Q5_K is at least as accurate as Q4_K on the same data (finer levels), not a bound.
+            let c4 = Q4K.convert(&v).unwrap();
+            assert!(c.report.rmse <= c4.report.rmse * 1.0001, "round {round}");
+        }
+    }
+
+    #[test]
+    fn q5_rejects_bad_input() {
+        assert_eq!(
+            dequantize_q5_k(&[0; 175]),
+            Err(KQuantError::BadByteLength {
+                len: 175,
+                block_bytes: 176
+            })
+        );
+        assert_eq!(
+            quantize_q5_k(&[0.0; 100]),
+            Err(KQuantError::NotBlockAligned { len: 100 })
+        );
     }
 }

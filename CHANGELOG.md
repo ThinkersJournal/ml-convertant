@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.11]
+
+### Added
+- `ml-convertant-kquants`: Q5_K (`quantize_q5_k`, `dequantize_q5_k`, `q5_k_bound`, `Q5K`), bit-exact against ggml's reference
+  on 60 super-blocks; the Q4_K/Q5_K scale search is shared.
+
 ## [0.1.10]
 
 ### Added
