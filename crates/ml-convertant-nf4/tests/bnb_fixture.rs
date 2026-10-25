@@ -5,7 +5,8 @@
 
 use ml_convertant_core::Conversion;
 use ml_convertant_nf4::{
-    NF4_CODE, Nf4, dequantize_nested_absmax, dequantize_nf4, nf4_block_bound, quantize_nf4,
+    NF4_CODE, Nf4, dequantize_nested_absmax, dequantize_nf4, dynamic_map_8bit_signed,
+    nf4_block_bound, quantize_absmax_with_offset, quantize_nf4,
 };
 use mlmf_bnb::{locate_layers, read_layer};
 use mlmf_safetensors::{parse_header, parse_tensors};
@@ -143,4 +144,40 @@ fn round_trip_report_on_the_original_weights() {
         .map(nf4_block_bound)
         .fold(0.0, f64::max);
     assert_eq!(c.report.bound, Some(worst));
+}
+
+#[test]
+fn dynamic_map_equals_the_checkpoints_nested_quant_map() {
+    let b = bnb();
+    let ours = dynamic_map_8bit_signed();
+    assert_eq!(b.nested_map.len(), 256);
+    for (i, (o, t)) in ours.iter().zip(&b.nested_map).enumerate() {
+        assert_eq!(o.to_bits(), t.to_bits(), "entry {i}: {o} vs {t}");
+    }
+}
+
+#[test]
+fn double_quant_reproduces_bnbs_absmax_codes_and_nested_scale() {
+    let b = bnb();
+    let q = quantize_nf4(&original(), BLOCKSIZE).unwrap();
+    let map = dynamic_map_8bit_signed();
+    // The checkpoint's offset is the mean over the whole 1024-row layer, which a 16-row slice cannot
+    // reproduce; quantizing against the checkpoint's own offset is the comparable operation.
+    let dq = quantize_absmax_with_offset(&q.absmax, &map, b.nested_offset).unwrap();
+    assert_eq!(dq.nested_absmax.len(), 1);
+    assert_eq!(
+        dq.nested_absmax[0].to_bits(),
+        b.nested_absmax[0].to_bits(),
+        "nested absmax"
+    );
+    let diff: Vec<usize> = (0..dq.codes.len())
+        .filter(|&i| dq.codes[i] != b.absmax_codes[i])
+        .collect();
+    assert!(
+        diff.is_empty(),
+        "{} of {} absmax codes differ, first at {:?}",
+        diff.len(),
+        dq.codes.len(),
+        diff.first()
+    );
 }

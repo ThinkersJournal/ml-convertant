@@ -15,3 +15,5 @@ Inputs from the mlmf lane: PTQ calibration (min/max, percentile, entropy-histogr
 dynamic/static; hits US12099930B2 (TI histogram tail-discard, moving-average max, power-of-2 clip),
 US20230342613A1 (Alphaics integer-only QAT): clear for mlmf's old code, not for us if we add those
 steps. Claims reader: C:\Projects\tools\patent-claims.py.
+
+Row 5b (NF4 double-quant absmax encode) is PR #8 from `feat/nf4-double-quant` (worktree `C:\Projects\ml-convertant-wt-nf4dq`), stacked on #7: dynamic map and all 256 absmax codes bit-identical to the fixture (torch linspace is FMA; python float * f32 tensor is an f32 multiply).
