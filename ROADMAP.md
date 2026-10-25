@@ -12,7 +12,7 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 | 5 | NF4 encode/decode, byte-exact vs the real bnb fixture | done |
 | 5b | NF4 double-quant absmax encode (dynamic map), bit-exact vs the fixture | done |
 | 6 | AWQ unpack/pack/repack (lossless, identical to Fuel's repack) | PR open |
-| 7 | LoRA merge | |
+| 7 | LoRA merge (f32, bounded; vs f64 reference) | PR open |
 | 7b | llama.cpp differential on hosted runners (gcc, pinned commit) | PR open (stacked on 4) |
 | 8 | mlmf glue (read -> convert -> write) | |
 
