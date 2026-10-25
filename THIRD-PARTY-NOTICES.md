@@ -31,7 +31,9 @@
 - Used by: `crates/ml-convertant-nf4/tests/fixtures/bnb_double_quant/` (a 16-row excerpt of one weight
   matrix in quantized and original form, modified as listed in that directory's `PROVENANCE.md`).
   Copied from the Fuel repository's identical fixture (`fuel-tensor/tests/fixtures/bnb_double_quant/`,
-  origin/main, 2026-10-25); the SHA-256 digests in `PROVENANCE.md` were re-checked against our copies.
+  at Fuel origin/main `d02dc578a7a7`, last changed by Fuel commit `54676bbcd4d2`, fetched 2026-10-25;
+  Fuel's own origin line for it is its `THIRD-PARTY-NOTICES.md`, which credits the same two upstream repositories
+  above under Apache-2.0); the SHA-256 digests in `PROVENANCE.md` were re-checked against our copies.
   The licence text is `LICENSE-Qwen3-0.6B-Apache-2.0.txt` beside it.
 
 ## half (MIT OR Apache-2.0)
