@@ -1,0 +1,76 @@
+name: Differential
+
+# Compares our Q8_0 / Q4_0 against ggml's own reference code, compiled from the pinned llama.cpp
+# commit on this runner. Hosted runners only: this is a public repository.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  LLAMA_CPP_SHA: 9d57ce456c94d241dde672b2db9cf18879766568
+
+jobs:
+  llama-cpp:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ggml-org/llama.cpp
+          ref: 9d57ce456c94d241dde672b2db9cf18879766568
+          path: llama.cpp
+          sparse-checkout: |
+            ggml
+            LICENSE
+      - uses: dtolnay/rust-toolchain@5059963b1731bf1580991b5f3b1eecfb5da406c0 # 1.98.0 (branch)
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Pinned commit is the one we think it is
+        run: |
+          cd llama.cpp
+          test "$(git rev-parse HEAD)" = "$LLAMA_CPP_SHA"
+      - name: Build ggml reference harnesses
+        run: |
+          mkdir -p out
+          for f in q8_0 q4_0; do
+            gcc -O2 -ffp-contract=off -w \
+              -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
+              tools/golden/${f}_reference.c llama.cpp/ggml/src/ggml-quants.c -lm -o out/ref_$f
+          done
+      - name: Build our converter
+        run: cargo build --release --locked -p ml-convertant-ggml --example convert_file
+      - name: Committed vectors reproduce from the pinned reference
+        run: |
+          for f in q8_0 q4_0; do
+            g=crates/ml-convertant-ggml/tests/golden
+            out/ref_$f $g/$f.in.f32 out/$f.gold.bin out/$f.gold.deq
+            cmp out/$f.gold.bin $g/$f.out.bin
+            cmp out/$f.gold.deq $g/$f.deq.f32
+          done
+      - name: Our output equals the reference on random data
+        run: |
+          for seed in 1 2 3; do
+            python tools/golden/gen_random_f32.py out/rand.f32 20000 $seed
+            for f in q8_0 q4_0; do
+              out/ref_$f out/rand.f32 out/ref.bin out/ref.deq
+              target/release/examples/convert_file $f out/rand.f32 out/our.bin out/our.deq
+              cmp out/ref.bin out/our.bin
+              cmp out/ref.deq out/our.deq
+              echo "$f seed $seed: $(wc -c < out/ref.bin) bytes identical"
+            done
+          done
