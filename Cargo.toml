@@ -1,0 +1,12 @@
+[package]
+name = "ml-convertant"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95"
+authors = ["Eric Evans <ciresnave@gmail.com>"]
+description = "Reserved name: conversions of machine learning model data (quantization, packing, merging). Placeholder, no code yet."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ThinkersJournal/ml-convertant"
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "conversion", "model"]
+categories = ["science"]
