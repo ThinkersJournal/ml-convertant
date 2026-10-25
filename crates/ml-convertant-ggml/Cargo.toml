@@ -1,0 +1,16 @@
+[package]
+name = "ml-convertant-ggml"
+description = "ggml block-format encode/decode (Q8_0) with measured error, bit-exact against llama.cpp's reference."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "ggml", "gguf", "q8_0"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.2" }
+half = "2"
