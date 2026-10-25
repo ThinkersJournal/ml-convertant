@@ -1,0 +1,21 @@
+[package]
+name = "ml-convertant-nf4"
+description = "bitsandbytes NF4 (4-bit NormalFloat) encode/decode with measured error, checked against real bitsandbytes output."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "nf4", "bitsandbytes", "qlora"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.4" }
+
+[dev-dependencies]
+half = "2"
+mlmf-bnb = "~0.7.15"
+mlmf-core = "~0.7.15"
+mlmf-safetensors = "~0.7.15"

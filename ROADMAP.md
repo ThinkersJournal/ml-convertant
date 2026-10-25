@@ -8,8 +8,9 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 | 1 | CI on hosted runners (merged #2) | done |
 | 2 | Workspace skeleton + `ml-convertant-core` (`ErrorReport`, `Conversion`) | done |
 | 3 | Keystone: f32 <-> Q8_0, bound + llama.cpp golden vectors | done |
-| 4 | Q4_0 | PR open |
-| 5 | NF4 (against the bnb fixture) | |
+| 4 | Q4_0 | done |
+| 5 | NF4 encode/decode, byte-exact vs the real bnb fixture | PR open |
+| 5b | NF4 double-quant absmax encode (dynamic map) | next |
 | 6 | AWQ unpack/repack | |
 | 7 | LoRA merge | |
 | 8 | mlmf glue (read -> convert -> write) | |
