@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.10]
+
+### Added
+- `ml-convertant-kquants`: Q4_K (`quantize_q4_k`, `dequantize_q4_k`, `q4_k_bound`, `Q4K`), bit-exact against ggml's
+  reference at llama.cpp `9d57ce456c` on 60 super-blocks; per-input error bound.
+
 ## [0.1.9]
 
 ### Added

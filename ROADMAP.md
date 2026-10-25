@@ -15,5 +15,9 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 | 7 | LoRA merge (f32, bounded; vs f64 reference) | PR open |
 | 7b | llama.cpp differential on hosted runners (gcc, pinned commit) | PR open (stacked on 4) |
 | 8 | mlmf glue (read -> convert -> write) | |
+| 9 | Patent sweep: `docs/PATENT-SWEEP.md` per `C:\Projects\PATENT-SWEEP-PROCESS.md`; REQUIRED before the first real publish (CireSnave 2026-10-25, board 286) | in progress |
+| 10 | K-quants: Q4_K (bit-exact vs ggml) | PR open |
+| 10b | K-quants: Q5_K, Q6_K, Q2_K, Q3_K (one row each) | next |
+| 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | after 7 |
 
 Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).
