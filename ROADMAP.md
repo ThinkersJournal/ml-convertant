@@ -19,7 +19,7 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 | 10 | K-quants: Q4_K (bit-exact vs ggml) | PR open |
 | 10b | K-quants: Q5_K (bit-exact vs ggml) | PR open (stacked on 10) |
 | 10c | K-quants: Q6_K (bit-exact vs ggml) | PR open (stacked on 10b) |
-| 10d | K-quants: Q2_K, Q3_K (one row each) | next |
+| 10d | K-quants: Q2_K and Q3_K (bit-exact vs ggml) | PR open (stacked on 10c) |
 | 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | after 7 |
 
 Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).

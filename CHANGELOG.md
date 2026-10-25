@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.13]
+
+### Added
+- `ml-convertant-kquants`: Q2_K and Q3_K (`quantize_q2_k`, `quantize_q3_k` and their dequantizers, bounds and `Q2K`, `Q3K`),
+  bit-exact against ggml's reference on 60 super-blocks each. All of ggml's K-quants Q2 to Q6 are now covered.
+
 ## [0.1.12]
 
 ### Added
