@@ -7,7 +7,7 @@ MLMF reads and writes model files and does not transform the data inside them; t
 
 | crate | status |
 |---|---|
-| `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.0) |
+| `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.1) |
 | Q8_0, Q4_0, NF4, AWQ repack, LoRA merge | planned, see `ROADMAP.md` |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.

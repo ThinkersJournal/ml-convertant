@@ -2,7 +2,7 @@
 members = [".", "crates/*"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.95"
 authors = ["Eric Evans <ciresnave@gmail.com>"]
@@ -23,4 +23,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "crates/ml-convertant-core", version = "0.1.0" }
+ml-convertant-core = { path = "crates/ml-convertant-core", version = "0.1.1" }
