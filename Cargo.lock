@@ -4,4 +4,11 @@ version = 4
 
 [[package]]
 name = "ml-convertant"
-version = "0.0.1"
+version = "0.1.0"
+dependencies = [
+ "ml-convertant-core",
+]
+
+[[package]]
+name = "ml-convertant-core"
+version = "0.1.0"

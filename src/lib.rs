@@ -1,3 +1,6 @@
-//! `ml-convertant` is reserved for conversions of machine learning model data
-//! (quantization and dequantization, packing and unpacking, merging).
-//! This 0.0.0 release is a placeholder and contains no code.
+//! Conversions of machine learning model data (quantization, packing, merging) with measured error.
+//!
+//! This facade re-exports the member crates.
+
+pub use ml_convertant_core as core;
+pub use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch, ReferenceId};

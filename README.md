@@ -1,11 +1,13 @@
 # ML-ConvertAnt
 
-**Reserved name. No code yet.**
+Conversions of machine learning model data: quantization and dequantization, packing and
+unpacking, merging (such as LoRA), each reporting its measured error.
 
-ML-ConvertAnt will hold conversions of machine learning model data: quantization and
-dequantization, packing and unpacking, merging (such as LoRA), and conversions with measured error.
+MLMF reads and writes model files and does not transform the data inside them; this project does.
 
-It exists because MLMF reads and writes model files and does not interpret or transform the data
-inside them; consumers that want a conversion should not have to take one with the file reader.
+| crate | status |
+|---|---|
+| `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.0) |
+| Q8_0, Q4_0, NF4, AWQ repack, LoRA merge | planned, see `ROADMAP.md` |
 
-Status: placeholder (version 0.0.0), claimed 2026-10-25. Licence: MIT OR Apache-2.0.
+Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
