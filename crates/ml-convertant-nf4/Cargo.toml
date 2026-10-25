@@ -12,7 +12,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.4" }
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.5" }
 
 [dev-dependencies]
 half = "2"

@@ -20,7 +20,9 @@
 - What we use: the NF4 codebook values (`bitsandbytes/functional.py`, `get_4bit_type("nf4")`), and
   the documented algorithm of the reference `quantize_4bit` / `dequantize_4bit` / `dequantize_blockwise`
   in `bitsandbytes/backends/default/ops.py`: block absmax, scaling, nearest-code by midpoints, nibble
-  order, and the double-quantized absmax decode. `ml-convertant-nf4` is our own Rust implementation;
+  order, and the double-quantized absmax decode; and from `functional.py` the documented
+  `create_dynamic_map(signed=True)` construction and `quantize_4bit(compress_statistics=True)` (offset =
+  mean absmax, blockwise 8-bit quantization of `absmax - offset`). `ml-convertant-nf4` is our own Rust implementation;
   no bitsandbytes source is copied. The codebook is checked equal to the checkpoint's own `quant_map`.
 
 ## Qwen3-0.6B / unsloth bnb fixture (Apache-2.0)

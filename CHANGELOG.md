@@ -4,6 +4,13 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.5]
+
+### Added
+- `ml-convertant-nf4`: double quantization of the per-block absmax (`dynamic_map_8bit_signed`,
+  `quantize_absmax`, `quantize_absmax_with_offset`, `DoubleQuant`); the dynamic map and the 8-bit codes
+  are bit-identical to a real bitsandbytes checkpoint.
+
 ## [0.1.4]
 
 ### Added

@@ -33,6 +33,12 @@
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
 use std::fmt;
 
+mod double_quant;
+pub use double_quant::{
+    DoubleQuant, DoubleQuantAbsmax, NESTED_BLOCKSIZE, absmax_block_bound, dynamic_map_8bit_signed,
+    quantize_absmax, quantize_absmax_with_offset,
+};
+
 /// The NF4 codebook (bitsandbytes `get_4bit_type("nf4")`, from `create_normal_map(offset=0.9677083,
 /// use_extra_value=True)`), sorted ascending.
 pub const NF4_CODE: [f32; 16] = [
