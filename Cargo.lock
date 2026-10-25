@@ -45,20 +45,29 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "ml-convertant"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
+ "ml-convertant-awq",
  "ml-convertant-core",
  "ml-convertant-ggml",
  "ml-convertant-nf4",
 ]
 
 [[package]]
+name = "ml-convertant-awq"
+version = "0.1.6"
+dependencies = [
+ "half",
+ "ml-convertant-core",
+]
+
+[[package]]
 name = "ml-convertant-core"
-version = "0.1.5"
+version = "0.1.6"
 
 [[package]]
 name = "ml-convertant-ggml"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -66,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-nf4"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "half",
  "ml-convertant-core",

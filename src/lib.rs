@@ -2,6 +2,7 @@
 //!
 //! This facade re-exports the member crates.
 
+pub use ml_convertant_awq as awq;
 pub use ml_convertant_core as core;
 pub use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch, ReferenceId};
 pub use ml_convertant_ggml as ggml;
