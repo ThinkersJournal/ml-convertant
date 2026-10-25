@@ -14,3 +14,6 @@ MLMF reads and writes model files and does not transform the data inside them; t
 | LoRA merge | see `ROADMAP.md` |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
+
+**AWQ verification limits:** `ml-convertant-awq` is checked against Fuel's repack output and AutoAWQ's
+documented layout on seeded random layers. **No real AWQ checkpoint's bytes have been checked.**
