@@ -70,13 +70,13 @@
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
   (`ggml/src/ggml-quants.c`, `ggml/src/ggml-common.h`). Licence: MIT, Copyright (c) 2023-2026 The ggml
   authors; text in `tools/golden/LICENSE-ggml-MIT`.
-- What we derive: the Q4_K and Q5_K algorithms (`quantize_row_q4_K_ref`, `quantize_row_q5_K_ref`, `dequantize_row_q5_K`, `make_qkx2_quants`, `nearest_int`,
+- What we derive: the Q4_K, Q5_K and Q6_K algorithms (`quantize_row_q4_K_ref`, `quantize_row_q5_K_ref`, `quantize_row_q6_K_ref`, `dequantize_row_q5_K`, `dequantize_row_q6_K`, `make_qx_quants`, `make_qkx2_quants`, `nearest_int`,
   `get_scale_min_k4`, `dequantize_row_q4_K`). `crates/ml-convertant-kquants/src/lib.rs` is a Rust
   translation of that published algorithm that follows the source operation for operation (the bytes must
   be identical), so it is a derivative work of the MIT-licensed source and carries that credit and licence.
-- Test vectors: `crates/ml-convertant-kquants/tests/golden/q{4,5}_k.{in.f32,out.bin,deq.f32}`: `out.bin` and
-  `deq.f32` come from ggml's functions compiled unmodified from that commit with `tools/golden/q{4,5}_k_reference.c`
-  (our harness; built with `-DNDEBUG` as llama.cpp does); `in.f32` from `tools/golden/gen_q{4,5}_k_inputs.py`.
+- Test vectors: `crates/ml-convertant-kquants/tests/golden/q{4,5,6}_k.{in.f32,out.bin,deq.f32}`: `out.bin` and
+  `deq.f32` come from ggml's functions compiled unmodified from that commit with `tools/golden/q{4,5,6}_k_reference.c`
+  (our harness; built with `-DNDEBUG` as llama.cpp does); `in.f32` from `tools/golden/gen_q{4,5,6}_k_inputs.py`.
 - Not copied: Fuel's `k_quants.rs` (candle-derived, see `docs/DESIGN.md` §5); we translated from ggml directly.
 
 ## half (MIT OR Apache-2.0)

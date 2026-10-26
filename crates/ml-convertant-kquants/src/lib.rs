@@ -1,4 +1,4 @@
-//! ggml K-quants with measured error: [`Q4K`] and [`Q5K`].
+//! ggml K-quants with measured error: [`Q4K`], [`Q5K`] and [`Q6K`].
 //!
 //! # Q4_K
 //!
@@ -25,6 +25,13 @@
 //! Q5_K is the same scheme with 5-bit levels (`0..=31`): 176 bytes per super-block, the fifth bit of each
 //! level in a 32-byte `qh` array; its bound has `31 * d1` in place of `15 * d1`.
 //!
+//! # Q6_K
+//!
+//! Sixteen sub-blocks of 16, each with an `i8` scale; levels `-32..=31` (6 bits: 4 in `ql`, 2 in `qh`),
+//! one f16 super-block scale `d`; 210 bytes. An element decodes to `d * sc[j] * (q - 32)`. Encoding follows
+//! `quantize_row_q6_K_ref` and `make_qx_quants` (squared-weight scale search). The bound is per input
+//! like Q4_K's, over the decoded range `[-32, 31] * d * sc[j]`.
+//!
 //! Non-finite inputs are errors.
 
 use half::f16;
@@ -37,6 +44,10 @@ pub const QK_K: usize = 256;
 pub const Q4_K_BLOCK_BYTES: usize = 2 + 2 + 12 + QK_K / 2;
 /// Bytes per Q5_K super-block: 2 + 2 + 12 + 32 + 128.
 pub const Q5_K_BLOCK_BYTES: usize = 2 + 2 + 12 + QK_K / 8 + QK_K / 2;
+/// Bytes per Q6_K super-block: 128 + 64 + 16 + 2.
+pub const Q6_K_BLOCK_BYTES: usize = QK_K / 2 + QK_K / 4 + QK_K / 16 + 2;
+
+const GROUP_MAX_EPS: f32 = 1e-15;
 
 /// Why a K-quant conversion failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -402,6 +413,233 @@ pub fn dequantize_q5_k(bytes: &[u8]) -> Result<Vec<f32>, KQuantError> {
     Ok(out)
 }
 
+/// ggml's `make_qx_quants` for `rmse_type == 1` and no weights: symmetric levels `-nmax..nmax-1`
+/// (stored offset by `nmax`), weighted by `x^2`, with the 19-step scale search. Returns the scale.
+fn make_qx_quants(nmax: i32, x: &[f32], l_out: &mut [u8]) -> f32 {
+    let n = x.len();
+    let (mut max, mut amax) = (0.0f32, 0.0f32);
+    for &v in x {
+        let ax = v.abs();
+        if ax > amax {
+            amax = ax;
+            max = v;
+        }
+    }
+    if amax < GROUP_MAX_EPS {
+        l_out[..n].fill(0);
+        return 0.0;
+    }
+    let nmax_f = nmax as f32;
+    let mut iscale = -nmax_f / max;
+    let (mut sumlx, mut suml2) = (0.0f32, 0.0f32);
+    for i in 0..n {
+        let l = nearest_int(iscale * x[i]).clamp(-nmax, nmax - 1);
+        l_out[i] = (l + nmax) as u8;
+        let w = x[i] * x[i];
+        let lf = l as f32;
+        sumlx += w * x[i] * lf;
+        suml2 += w * lf * lf;
+    }
+    let mut scale = if suml2 != 0.0 { sumlx / suml2 } else { 0.0 };
+    let mut best = scale * sumlx;
+    for is in -9i32..=9 {
+        if is == 0 {
+            continue;
+        }
+        iscale = -(nmax_f + 0.1f32 * is as f32) / max;
+        sumlx = 0.0;
+        suml2 = 0.0;
+        for &v in x {
+            let l = nearest_int(iscale * v).clamp(-nmax, nmax - 1);
+            let w = v * v;
+            let lf = l as f32;
+            sumlx += w * v * lf;
+            suml2 += w * lf * lf;
+        }
+        if suml2 > 0.0 && sumlx * sumlx > best * suml2 {
+            for i in 0..n {
+                let l = nearest_int(iscale * x[i]).clamp(-nmax, nmax - 1);
+                l_out[i] = (l + nmax) as u8;
+            }
+            scale = sumlx / suml2;
+            best = scale * sumlx;
+        }
+    }
+    scale
+}
+
+/// Encodes `x` (a multiple of 256 finite values) to Q6_K bytes.
+pub fn quantize_q6_k(x: &[f32]) -> Result<Vec<u8>, KQuantError> {
+    if !x.len().is_multiple_of(QK_K) {
+        return Err(KQuantError::NotBlockAligned { len: x.len() });
+    }
+    check_finite(x)?;
+    let mut out = Vec::with_capacity(x.len() / QK_K * Q6_K_BLOCK_BYTES);
+    for sb in x.as_chunks::<QK_K>().0 {
+        let mut l = [0u8; QK_K];
+        let mut scales = [0.0f32; QK_K / 16];
+        let (mut max_scale, mut max_abs_scale) = (0.0f32, 0.0f32);
+        for ib in 0..QK_K / 16 {
+            let scale = make_qx_quants(
+                32,
+                &sb[16 * ib..16 * ib + 16],
+                &mut l[16 * ib..16 * ib + 16],
+            );
+            scales[ib] = scale;
+            if scale.abs() > max_abs_scale {
+                max_abs_scale = scale.abs();
+                max_scale = scale;
+            }
+        }
+        if max_abs_scale < GROUP_MAX_EPS {
+            out.extend_from_slice(&[0u8; Q6_K_BLOCK_BYTES]);
+            continue;
+        }
+        let iscale = -128.0f32 / max_scale;
+        let d16 = f16::from_f32(1.0f32 / iscale);
+        let mut sc = [0i8; QK_K / 16];
+        for ib in 0..QK_K / 16 {
+            sc[ib] = nearest_int(iscale * scales[ib]).min(127) as i8;
+        }
+        for j in 0..QK_K / 16 {
+            let d = d16.to_f32() * f32::from(sc[j]);
+            if d == 0.0 {
+                continue;
+            }
+            for ii in 0..16 {
+                let lv = nearest_int(sb[16 * j + ii] / d).clamp(-32, 31);
+                l[16 * j + ii] = (lv + 32) as u8;
+            }
+        }
+        let mut ql = [0u8; QK_K / 2];
+        let mut qh = [0u8; QK_K / 4];
+        for (half, j) in (0..QK_K).step_by(128).enumerate() {
+            for k in 0..32 {
+                let (q1, q2) = (l[j + k] & 0xF, l[j + k + 32] & 0xF);
+                let (q3, q4) = (l[j + k + 64] & 0xF, l[j + k + 96] & 0xF);
+                ql[half * 64 + k] = q1 | (q3 << 4);
+                ql[half * 64 + k + 32] = q2 | (q4 << 4);
+                qh[half * 32 + k] = (l[j + k] >> 4)
+                    | ((l[j + k + 32] >> 4) << 2)
+                    | ((l[j + k + 64] >> 4) << 4)
+                    | ((l[j + k + 96] >> 4) << 6);
+            }
+        }
+        out.extend_from_slice(&ql);
+        out.extend_from_slice(&qh);
+        out.extend(sc.iter().map(|&v| v as u8));
+        out.extend_from_slice(&d16.to_bits().to_le_bytes());
+    }
+    Ok(out)
+}
+
+/// Decodes Q6_K bytes to f32.
+pub fn dequantize_q6_k(bytes: &[u8]) -> Result<Vec<f32>, KQuantError> {
+    if !bytes.len().is_multiple_of(Q6_K_BLOCK_BYTES) {
+        return Err(KQuantError::BadByteLength {
+            len: bytes.len(),
+            block_bytes: Q6_K_BLOCK_BYTES,
+        });
+    }
+    let mut out = vec![0.0f32; bytes.len() / Q6_K_BLOCK_BYTES * QK_K];
+    for (block, dst) in bytes
+        .as_chunks::<Q6_K_BLOCK_BYTES>()
+        .0
+        .iter()
+        .zip(out.as_chunks_mut::<QK_K>().0)
+    {
+        let (ql, rest) = block.split_at(QK_K / 2);
+        let (qh, rest) = rest.split_at(QK_K / 4);
+        let (sc, dbytes) = rest.split_at(QK_K / 16);
+        let d = f16::from_bits(u16::from_le_bytes([dbytes[0], dbytes[1]])).to_f32();
+        for half in 0..2 {
+            let (ql, qh, sc) = (&ql[half * 64..], &qh[half * 32..], &sc[half * 8..]);
+            let y = &mut dst[half * 128..half * 128 + 128];
+            for l in 0..32 {
+                let is = l / 16;
+                let q1 = i32::from((ql[l] & 0xF) | ((qh[l] & 3) << 4)) - 32;
+                let q2 = i32::from((ql[l + 32] & 0xF) | (((qh[l] >> 2) & 3) << 4)) - 32;
+                let q3 = i32::from((ql[l] >> 4) | (((qh[l] >> 4) & 3) << 4)) - 32;
+                let q4 = i32::from((ql[l + 32] >> 4) | (((qh[l] >> 6) & 3) << 4)) - 32;
+                y[l] = d * f32::from(sc[is] as i8) * q1 as f32;
+                y[l + 32] = d * f32::from(sc[is + 2] as i8) * q2 as f32;
+                y[l + 64] = d * f32::from(sc[is + 4] as i8) * q3 as f32;
+                y[l + 96] = d * f32::from(sc[is + 6] as i8) * q4 as f32;
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// The worst-case |x - x'| over `x`, given its Q6_K encoding `bytes` (see the crate docs).
+pub fn q6_k_bound(x: &[f32], bytes: &[u8]) -> Result<f64, KQuantError> {
+    if !x.len().is_multiple_of(QK_K) {
+        return Err(KQuantError::NotBlockAligned { len: x.len() });
+    }
+    if bytes.len() != x.len() / QK_K * Q6_K_BLOCK_BYTES {
+        return Err(KQuantError::BadByteLength {
+            len: bytes.len(),
+            block_bytes: Q6_K_BLOCK_BYTES,
+        });
+    }
+    let slack = 2f64.powi(-22);
+    let mut worst = 0.0f64;
+    for (sb, block) in x
+        .as_chunks::<QK_K>()
+        .0
+        .iter()
+        .zip(bytes.as_chunks::<Q6_K_BLOCK_BYTES>().0)
+    {
+        let sc = &block[QK_K / 2 + QK_K / 4..QK_K / 2 + QK_K / 4 + QK_K / 16];
+        let d = f64::from(
+            f16::from_bits(u16::from_le_bytes([
+                block[Q6_K_BLOCK_BYTES - 2],
+                block[Q6_K_BLOCK_BYTES - 1],
+            ]))
+            .to_f32(),
+        );
+        for j in 0..QK_K / 16 {
+            let ds = d * f64::from(sc[j] as i8);
+            let (a, b) = (-32.0 * ds, 31.0 * ds);
+            let (lo, hi) = (a.min(b), a.max(b));
+            for &v in &sb[16 * j..16 * j + 16] {
+                let v = f64::from(v);
+                let err = if ds == 0.0 {
+                    v.abs()
+                } else if v < lo {
+                    lo - v
+                } else if v > hi {
+                    v - hi
+                } else {
+                    ds.abs() * (0.5 + 2f64.powi(-16))
+                };
+                worst = worst.max(err + slack * (v.abs() + lo.abs() + hi.abs()));
+            }
+        }
+    }
+    Ok(worst)
+}
+
+/// f32 -> Q6_K, reporting the error of the round trip against the input.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Q6K;
+
+impl Conversion for Q6K {
+    type Input = [f32];
+    type Output = Vec<u8>;
+    type Error = KQuantError;
+
+    fn convert(&self, input: &[f32]) -> Result<Converted<Vec<u8>>, KQuantError> {
+        let output = quantize_q6_k(input)?;
+        let decoded = dequantize_q6_k(&output)?;
+        let bound = q6_k_bound(input, &output)?;
+        let report = ErrorReport::measure(input, &decoded)
+            .map_err(KQuantError::Measure)?
+            .with_bound(bound);
+        Ok(Converted { output, report })
+    }
+}
+
 fn k4_bound(x: &[f32], bytes: &[u8], block_bytes: usize, nmax: f64) -> Result<f64, KQuantError> {
     if !x.len().is_multiple_of(QK_K) {
         return Err(KQuantError::NotBlockAligned { len: x.len() });
@@ -615,6 +853,38 @@ mod tests {
         assert_eq!(
             quantize_q5_k(&[0.0; 100]),
             Err(KQuantError::NotBlockAligned { len: 100 })
+        );
+    }
+
+    #[test]
+    fn q6_layout_round_trip_and_zero_block() {
+        assert_eq!(Q6_K_BLOCK_BYTES, 210);
+        let z = Q6K.convert(&[0.0; 256]).unwrap();
+        assert_eq!(z.output, vec![0u8; 210]);
+        assert_eq!(z.report.max_abs, 0.0);
+        let mut st = 33u64;
+        for round in 0..40usize {
+            let scale = 10f32.powi((round % 6) as i32 - 3);
+            let v: Vec<f32> = (0..512).map(|_| lcg(&mut st) * scale).collect();
+            let c = Q6K.convert(&v).unwrap();
+            assert_eq!(c.output.len(), 2 * Q6_K_BLOCK_BYTES);
+            assert_eq!(c.report.within_bound(), Some(true), "round {round}");
+            assert!(c.report.is_clean());
+        }
+    }
+
+    #[test]
+    fn q6_rejects_bad_input() {
+        assert_eq!(
+            dequantize_q6_k(&[0; 209]),
+            Err(KQuantError::BadByteLength {
+                len: 209,
+                block_bytes: 210
+            })
+        );
+        assert_eq!(
+            quantize_q6_k(&[0.0; 3]),
+            Err(KQuantError::NotBlockAligned { len: 3 })
         );
     }
 }
