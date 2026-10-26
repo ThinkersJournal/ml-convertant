@@ -4,6 +4,13 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.7]
+
+### Added
+- `.github/workflows/differential.yml`: on hosted ubuntu and windows runners, builds ggml's reference from the
+  pinned llama.cpp commit (`9d57ce456c`) and compares Q8_0 and Q4_0 byte for byte on seeded random input;
+  `ml-convertant-ggml` example `convert_file`; `tools/golden/gen_random_f32.py`.
+
 ## [0.1.6]
 
 ### Added
