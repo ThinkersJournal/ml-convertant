@@ -8,4 +8,5 @@ pub use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch,
 pub use ml_convertant_ggml as ggml;
 pub use ml_convertant_kquants as kquants;
 pub use ml_convertant_lora as lora;
+pub use ml_convertant_mlmf as mlmf;
 pub use ml_convertant_nf4 as nf4;

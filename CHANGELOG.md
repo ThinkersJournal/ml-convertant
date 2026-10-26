@@ -4,6 +4,14 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.17]
+
+### Added
+- `ml-convertant-mlmf`: GGUF in, GGUF out (`convert_gguf`, `Plan`, `Target`): reads with `mlmf-gguf`, converts the selected
+  dense F32/F16/BF16 tensors to Q8_0, Q4_0 or Q2_K to Q6_K with a per-tensor error report, and writes with MLMF's encoder.
+  Metadata and unselected tensors are carried over unchanged; a file MLMF cannot fully describe is refused;
+  `general.quantization_version` (2) is added, and reported, when something was converted and the input lacked it.
+
 ## [0.1.15]
 
 ### Changed

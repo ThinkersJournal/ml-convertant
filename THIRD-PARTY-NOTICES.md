@@ -85,6 +85,7 @@ Dependency of `ml-convertant-ggml` and `ml-convertant-awq` (and dev-dependency o
 
 ## mlmf (MIT OR Apache-2.0)
 
+`ml-convertant-mlmf` depends on `mlmf-core`, `mlmf-ggml` and `mlmf-gguf` (tilde-pinned, crates.io) to read and write GGUF.
 Dev-dependencies of `ml-convertant-nf4` tests (`mlmf-bnb`, `mlmf-core`, `mlmf-safetensors`, tilde-pinned, crates.io) to read the fixture.
 
 Each future entry must give origin (URL + commit), licence, what we copied or derived, and which
