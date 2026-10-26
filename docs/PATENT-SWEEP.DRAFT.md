@@ -4,7 +4,7 @@ Date started: 2026-10-25; Run by: ml-convertant lane, Claude Sonnet 5.5; Method:
 
 Process: `C:\Projects\PATENT-SWEEP-PROCESS.md` (CireSnave, board 286 item 1).
 
-**Status: the search was blocked and most hits are UNREAD (three read, see Hits).** Google Patents rate-limited this machine's IP
+**Status: the search was blocked and most hits are UNREAD (six read, see Hits).** Google Patents rate-limited this machine's IP
 (HTTP 503) after the first two queries, and every other source tried refused or could not be driven
 without a browser (see "Source status"). Nothing below is a clearance. Per the PM (2026-10-25): *"If all stay
 blocked, the sweep stays UNREAD for those hits and nothing publishes."* This file exists so the work done so
@@ -67,12 +67,25 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 |---|---|---|---|---|
 | Q1 | 1, 2 | block-wise quantization neural network weights per-block scale 4-bit | Google Patents XHR, 2026-10-25 | 10 results; candidates listed under Leads |
 | Q2 | 3 | quantization normal distribution quantiles codebook 4-bit data type neural network weights | Google Patents XHR, 2026-10-25 | 18 results, none relevant (wireless, video) |
-| Q3 to Q16 | 4-12 | (queued: double quantization; dynamic exponent 8-bit map; LoRA merge; activation-aware quantization; repack layouts; conversion error reporting; dequant-merge-requant; block floating point; super-block scales; nibble packing; zero-point packing; error bounds) | Google Patents XHR | **503, not run**; a retry loop continues with 5-minute backoff and 150 s between queries |
+| Q3 | 4 | double quantization quantization constants quantized again block-wise neural network | Google Patents XHR | never ran (503 on 8 attempts) |
+| Q4 | 5 | dynamic exponent data type 8-bit quantization map linear fraction region | Google Patents XHR, 2026-10-25/26 | 10 results: image/video processing; none relevant |
+| Q5 | 8 | low-rank adaptation merge adapter matrices into pretrained weight matrices inference | same | 10 results: unrelated AI/medical/security patents; none relevant (search is semantic and noisy) |
+| Q6 | 7 | activation-aware weight quantization scaling salient weight channels low-bit | same | none relevant |
+| Q7 | 7 | repack quantized weights layout matrix multiplication kernel interleave 4-bit packed integer words | same | 4 results, none relevant |
+| Q8 | 9 | report quantization error each tensor conversion maximum absolute error mean error model conversion | same | none relevant |
+| Q9 | 12 | dequantize quantized weights apply low-rank update requantize merged weights | same | none relevant (video coding) |
+| Q10 | 1, 2, 6 | block floating point shared scale per block of weights 32 elements neural network | same | **relevant**: Nvidia H1/H2, Microsoft H4 to H6 (and unread Microsoft CN113348474B, EP3895075B1, US12585926B2, CN113273082B, US20250384257A1 Intel) |
+| Q11 | 6 | super-block quantization scales quantized minimums hierarchical scale weights | same | none relevant (video/entropy coding) |
+| Q12 | 1, 2 | packing 4-bit weights two per byte nibble block scale half precision large language model | same | none relevant (ray tracing hardware) |
+| Q13 | 7 | asymmetric group-wise quantization zero point packed with weights scales per group | same | none relevant except CN111937010B (Amazon, "Accelerated quantized multiplication and addition operations": compute-side; unread) |
+| Q14 | 9 | worst-case quantization error bound per block scale rounding neural network weights | same | none relevant (Cerebras compute fabric, video coding) |
+| Q15, Q16 | 10, 9 | (queued) | same | never ran |
+| A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize) | Google Patents XHR, started 2026-10-26 | see "Second batch" below |
 | W1 to W5 | 1, 3, 5, 7, 8 | five phrasings of the above through the web search tool (two restricted to Google Patents and Justia) | web search | no patent claims; leads only (EP4341862A1) |
 
 ## Leads (NOT read; no verdict)
 
-Q1 produced three US leads; they are now READ and moved to Hits (H1 to H3). Still unread:
+Q1 and Q10 produced six US leads; they are now READ and moved to Hits (H1 to H6). Still unread:
 
 | patent | title | assignee | why it is a lead |
 |---|---|---|---|
@@ -97,6 +110,9 @@ Google Patents was throttled, so these are not machine-converted text.
 | H1 | US12045307B2 (priority 2020-08-28) | Fine-grained per-vector scaling for neural network quantization | Nvidia | indep. 1, 14, 17, 20 (all read in full) | Per-vector scale factors (a scale per vector of quantized parameters within one dimension), a coarse scale in dependents 5-7: the same two-level shape as our K-quants (ideas 4, 6) | Independent claims 1, 14 and 17 require **receiving per-vector scale factors for vectors of quantized parameters, then computing, with "a set of multipliers" operating "at the bitwidth", a vector dot-product value for each vector, scaling each dot-product by its per-vector scale factor, and accumulating the scaled dot-products to produce each element of an output tensor**; a neural-network layer is NOT required by these three (it appears in dependent claim 8; independent claim 20 is the one that has "a neural network model" process the tensors, with the same multiply/scale steps and a coarse scale). Quantizing alone (our encode, decode, repack and merge) lacks the multiply, per-vector-scale and accumulate steps: we compute no vector dot products at a reduced bitwidth | clear |
 | H2 | US12412082B2 (continuation of H1) | Fine-grained per-vector scaling for neural network quantization | Nvidia | indep. 1, 16, 19 (all read in full) | Closest in structure: "computing, for each vector of parameters ..., a per-vector scale factor", "computing a coarse scale factor ... shared by at least two of the vectors", "reducing ... a bitwidth of each parameter ... according to a corresponding per-vector scale factor" with the bitwidth "also reduced according to the coarse scale factor": our K-quants store an integer sub-block scale and one f16 super-block factor | Every independent claim ends with "**processing the reduced bitwidth vectors of parameters using a set of multiplier circuits that operate at the reduced bitwidth in a layer of the neural network model to produce each element of a multi-dimensional output tensor**". We run no layer and have no multiplier circuits | clear for conversions: the same dot-product ending (in a layer of a neural network model) as H1; '082 adds the coarse scale (the K-quant shape) |
 | H3 | US20250117639A1 (application, published 2025-04-10) | Loss-error-aware quantization of a low-bit neural network | Intel | indep. 1, 8, 15 and the means claim (read in full) | Quantizes network weights to low-bit weights | Requires partitioning the weights into a group to be quantized and a group "to be retrained", calculating a first loss and a second loss "with respect to a loss function", updating the retrained group from their difference, repeating the partition/quantize/retrain, and deploying; we quantize in one pass with no loss function and no retraining. An application; its claims may change before grant | clear |
+| H4 | US11645493B2 (priority 2018-05-04) | Flow for quantized neural networks | Microsoft | indep. 1, 11, 17 (read in full) | Quantizing a model's tensors with exponents shared over granules finer than a whole tensor (block floating point), per-row or per-column | Every independent claim requires **applying input tensors to an input layer of the quantized model, comparing the quantized output with the output of the normal-precision model, and, based on that comparison, selecting a new quantized-precision format** with a different parameter (per-row/per-column shared exponent). Our error report compares tensors element by element; we run no model, compare no model outputs, and select no format from them. If ML-ConvertAnt ever picks a format automatically from measured error, re-read this | clear |
+| H5 | US12443848B2 | Neural network activation compression with narrow block floating-point | Microsoft | indep. 1, 10, 17 (read; claim 17 to its visible end) | Converts values between block floating-point formats of different precision | All three are about **training**: forward propagation per layer producing activations in a first BFP format, converting them to a lower-precision second format, storing them, calculating a loss, retrieving and decompressing them, and backpropagating. We handle weights offline, with no layers, activations, loss or backpropagation | clear |
+| H6 | US10167800B1 (priority 2017-08-18) | Hardware node having a matrix vector unit with block-floating point processing | Microsoft | indep. 1, 7, 14 (read in full) | Closest on the block side: "first process a first subset of the [vector data] to determine a first shared exponent ... second subset ... a second shared exponent ... in a manner that no vector data from the second subset influences the first shared exponent", i.e. independently determined per-block shared factors, as in every block format here | Each independent claim is tied to a **matrix vector unit** processing "vector data corresponding to at least one layer of a neural network model" (claim 1 also a message processor, scalar processor and a pipeline of multifunction units), and the shared quantity is an **exponent** of floating-point data. Our scales are real-valued multipliers (f16/f32), not exponents, and we run no matrix vector unit. The nearest claim on the format side; a power-of-two-scale block format (e.g. MX-style E8M0) or any hardware-oriented code would need a fresh read | clear |
 
 **Flag for the PM, outside this repository (board 307):** H1 and H2 are about the arithmetic of running a quantized computation
 (multipliers at the reduced bitwidth, per-vector scaling of dot-products, accumulation; for H1 claims 1, 14 and 17 no layer is needed). That is the territory of
@@ -111,11 +127,12 @@ then be present.
 ### Still unread
 
 US12099930B2 and US20230342613A1 (inherited from the MLMF lane; relevant only if idea 11 is built); EP4341862A1
-(LoRA; not a US document, needs Google Patents or Espacenet); and every hit that queries Q3 to Q16 would return.
+(LoRA; not a US document, needs Google Patents or Espacenet); the Microsoft block-floating-point family members listed
+under Q10; CN111937010B; and whatever the second batch returns.
 
 ## Limitations
 
-- Incomplete: see Status. Three patents were read (H1 to H3); the other queries never ran.
+- Incomplete: see Status. Six patents were read (H1 to H6); queries Q3, Q15 and Q16 never ran and Q4 to Q14 returned mostly unrelated patents (see Queries).
 - AI-assisted, machine-converted patent text (when it can be read); search coverage is whatever the sources
   return; the general web search tool is not a patent database.
 - Not legal advice; not a freedom-to-operate opinion. A lawyer's review is a separate, later purchase.
