@@ -1,28 +1,34 @@
 # HANDOFF (lane ml-convertant)
 
-State 2026-10-26: main 0.1.5 (Q8_0, Q4_0, NF4 + double quant merged). Rebasing the queue in the PM's order:
-#9 AWQ (0.1.6, this), #10 llama.cpp differential (0.1.7), #11 LoRA (0.1.8); then the K-quants stack
-#12 Q4_K, #13 Q5_K, #14 Q6_K, #15 Q2_K+Q3_K (0.1.9 to 0.1.12 by merge order, each rebased after its parent).
-Primary checkout stays on `main`; each branch has its own `ml-convertant-wt-*` worktree. One PR per row; the PM
-allocates versions at each gate.
+State 2026-10-26 (THROTTLED until ~2026-10-28T01:00Z per C:\Projects\THROTTLE.md: gates, fixes, security only; no
+new rows; no avoidable builds; box-memory rule CARGO_BUILD_JOBS=2, one cargo at a time).
 
-Facts: Q8_0, Q4_0 and the K-quants are bit-exact vs real llama.cpp `9d57ce456c` (ggml-quants.c compiled with MSVC
-from VS 18; harnesses in tools/golden/; K-quants need -DNDEBUG; the build also needs gguf.h and
-ggml-cpu/ggml-cpu-impl.h). Non-finite input and subnormal-scale blocks are errors (reference UB). NF4: the encoder
-reproduces all 8192 packed bytes of the real bitsandbytes fixture from the original bf16 weights; the dynamic map
-and absmax codes are bit-identical too. AWQ: identical to Fuel's repack on 5 seeded cases and consistent with
-AutoAWQ's layout; NOT checked against a real AWQ checkpoint's bytes.
+**On main (0.1.15 at last read):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4
+(+ double quantization), awq (unpack/pack/repack), lora (merge), CI differential vs llama.cpp (ubuntu+windows,
+Q8_0..Q6_K), `docs/PATENT-SWEEP.md` (22 patents read, all clear), CHANGELOG, roadmap current. Branch protection: 5
+required checks (gates ubuntu/windows, deny, audit + llama-cpp ubuntu/windows added).
 
-Patent sweep: first record `docs/PATENT-SWEEP.md` (22 patents read, all clear; PR from `docs/patent-sweep`,
-worktree `C:\Projects\ml-convertant-wt-ps`). Re-sweep on its re-read triggers (dot-product kernels, calibration,
-automatic format selection, adapter training, power-of-two block scales, merging into a quantized base). Fuel's
-kernels are exposed to the Nvidia pair US12045307B2/US12412082B2 (board 307). Routes: Google Patents (throttles
-after a few queries; single pages via C:\Projects	ools\patent-claims.py usually answer) and the USPTO image PDFs
-(WebFetch downloadPdf + PyMuPDF, US only). Scratchpad files vanish with the session.
+**In flight (rebase onto main on the PM's merge ping, one at a time; the PM allocates versions):**
+- #19 `feat/lora-quantized-base` (worktree `ml-convertant-wt-req`): LoRA merge into a quantized base, 0.1.16.
+- #20 `feat/mlmf-glue` (worktree `ml-convertant-wt-glue`): `ml-convertant-mlmf`, GGUF in/out, 0.1.17.
+Open roadmap rows after those: none. Ideas, not scheduled (new rows are throttled): safetensors glue, NF4/AWQ bases in
+the LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), more K-quant
+formats (IQ*), MLMF-lane asks.
 
-TODO after #10 lands: add q4_k..q6_k to the CI differential (build tools/golden/q*_k_reference.c with -DNDEBUG,
-convert_file support). Candidates: LoRA merge into a quantized base (ROADMAP row 11), GPTQ repack, calibration.
+**Facts worth keeping:** Q8_0..Q6_K are byte-identical to ggml's own code compiled from llama.cpp `9d57ce456c`
+(harnesses `tools/golden/*_reference.c`, built with -DNDEBUG for the K-quants, MSVC locally, gcc in CI). NF4 encoder
+reproduces a real bitsandbytes checkpoint byte for byte. AWQ repack is identical to Fuel's, NOT checked against a real
+AWQ checkpoint. LoRA merge is NOT compared with PEFT-merged weights. The glue adds `general.quantization_version` = 2
+only when it converted something and the input lacked it.
 
-Row 7 LoRA: PR #11 from `feat/lora` (worktree `C:\Projects\ml-convertant-wt-lora`), stacked on the patent-sweep branch until #16 merges. Checked against hand-computed cases + f64 reference + proven bound; NOT against PEFT-merged weights.
+**Patent sweep:** first record done; re-read triggers are listed in `docs/PATENT-SWEEP.md`. Google Patents throttles
+after a few queries (single pages via C:\Projects\tools\patent-claims.py usually answer); USPTO image PDFs via
+WebFetch downloadPdf + PyMuPDF work for US documents. Fuel's kernels are exposed to the Nvidia pair
+(US12045307B2 claims 1/14/17, US12412082B2), board 307.
 
-K-quants: PRs #12 (Q4_K) <- #13 (Q5_K) <- #14 (Q6_K) <- #15 (Q2_K+Q3_K), crate `ml-convertant-kquants`, harnesses need -DNDEBUG; each rebased onto main after its parent merges. TODO: add q*_k to the CI differential.
+**Weekly sweep (2026-10-26):** issues open 0, closed 0, outsiders answered 0; roadmap open 0 after #19/#20 merge.
+Next sweep due ~2026-11-02.
+
+**Shell traps:** Bash tool breaks on big quoted heredocs containing apostrophes (write files with the Write tool, run
+Python from a file); `gh pr create` can 504: re-check `gh pr list --head` before retrying; worktrees:
+`ml-convertant-wt-*` beside the primary checkout, which stays on `main`.
