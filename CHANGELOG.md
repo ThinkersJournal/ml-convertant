@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.14]
+
+### Added
+- CI differential extended to the K-quants Q2_K to Q6_K: the pinned llama.cpp reference is built with `-DNDEBUG` and
+  compared byte for byte on seeded random input; `ml-convertant-kquants` example `convert_kquants_file`.
+
 ## [0.1.13]
 
 ### Added
