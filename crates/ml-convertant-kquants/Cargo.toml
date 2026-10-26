@@ -1,0 +1,16 @@
+[package]
+name = "ml-convertant-kquants"
+description = "ggml K-quants (Q4_K) encode/decode with measured error, bit-exact against llama.cpp's reference."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "ggml", "gguf", "k-quants"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.10" }
+half = "2"

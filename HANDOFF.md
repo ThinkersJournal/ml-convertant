@@ -24,3 +24,5 @@ TODO after #10 lands: add q4_k..q6_k to the CI differential (build tools/golden/
 convert_file support). Candidates: LoRA merge into a quantized base (ROADMAP row 11), GPTQ repack, calibration.
 
 Row 7 LoRA: PR #11 from `feat/lora` (worktree `C:\Projects\ml-convertant-wt-lora`), stacked on the patent-sweep branch until #16 merges. Checked against hand-computed cases + f64 reference + proven bound; NOT against PEFT-merged weights.
+
+K-quants: PRs #12 (Q4_K) <- #13 (Q5_K) <- #14 (Q6_K) <- #15 (Q2_K+Q3_K), crate `ml-convertant-kquants`, harnesses need -DNDEBUG; each rebased onto main after its parent merges. TODO: add q*_k to the CI differential.

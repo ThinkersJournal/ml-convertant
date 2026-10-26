@@ -65,6 +65,20 @@
   `merge` adds it to the base weight; scaling `lora_alpha / r`, or `lora_alpha / sqrt(r)` with
   `use_rslora`). `ml-convertant-lora` is our own implementation; no PEFT source is copied.
 
+## ggml K-quants (MIT), `ml-convertant-kquants`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`, `ggml/src/ggml-common.h`). Licence: MIT, Copyright (c) 2023-2026 The ggml
+  authors; text in `tools/golden/LICENSE-ggml-MIT`.
+- What we derive: the Q4_K algorithm (`quantize_row_q4_K_ref`, `make_qkx2_quants`, `nearest_int`,
+  `get_scale_min_k4`, `dequantize_row_q4_K`). `crates/ml-convertant-kquants/src/lib.rs` is a Rust
+  translation of that published algorithm that follows the source operation for operation (the bytes must
+  be identical), so it is a derivative work of the MIT-licensed source and carries that credit and licence.
+- Test vectors: `crates/ml-convertant-kquants/tests/golden/q4_k.{in.f32,out.bin,deq.f32}`: `out.bin` and
+  `deq.f32` come from ggml's functions compiled unmodified from that commit with `tools/golden/q4_k_reference.c`
+  (our harness; built with `-DNDEBUG` as llama.cpp does); `in.f32` from `tools/golden/gen_q4_k_inputs.py`.
+- Not copied: Fuel's `k_quants.rs` (candle-derived, see `docs/DESIGN.md` §5); we translated from ggml directly.
+
 ## half (MIT OR Apache-2.0)
 
 Dependency of `ml-convertant-ggml` and `ml-convertant-awq` (and dev-dependency of the NF4 tests) for f16/bf16 conversion, from crates.io.

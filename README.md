@@ -11,6 +11,7 @@ MLMF reads and writes model files and does not transform the data inside them; t
 | `ml-convertant-ggml` | Q8_0 and Q4_0, bit-exact vs llama.cpp `9d57ce456c` (0.1.3) |
 | `ml-convertant-nf4` | NF4 encode/decode and double quantization, byte-exact vs real bitsandbytes output (0.1.5) |
 | `ml-convertant-awq` | AWQ unpack/pack/repack, lossless, identical to Fuel's repack (0.1.6) |
+| `ml-convertant-kquants` | Q4_K, bit-exact vs ggml (0.1.10) |
 | `ml-convertant-lora` | Offline LoRA merge with a proven error bound (0.1.9) |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
