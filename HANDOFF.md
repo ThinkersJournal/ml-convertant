@@ -13,12 +13,12 @@ reproduces all 8192 packed bytes of the real bitsandbytes fixture from the origi
 and absmax codes are bit-identical too. AWQ: identical to Fuel's repack on 5 seeded cases and consistent with
 AutoAWQ's layout; NOT checked against a real AWQ checkpoint's bytes.
 
-Patent sweep (ROADMAP row 9): INCOMPLETE. Draft on branch `docs/patent-sweep` (`docs/PATENT-SWEEP.DRAFT.md`, no PR):
-three US hits read and clear (Nvidia US12045307B2 and US12412082B2, Intel US20250117639A1); Google Patents is
-throttling this IP (503); a retry loop writes `sweep_out2.txt` in the session scratchpad. The USPTO image-PDF route
-(WebFetch downloadPdf + PyMuPDF) works for US documents. Unread: TI US12099930B2, Alphaics US20230342613A1 (only if
-calibration is built), EP4341862A1, queries Q3-Q16. Rename the draft to PATENT-SWEEP.md only when complete.
-Fuel's kernels are exposed to the Nvidia pair (board 307).
+Patent sweep: first record `docs/PATENT-SWEEP.md` (22 patents read, all clear; PR from `docs/patent-sweep`,
+worktree `C:\Projects\ml-convertant-wt-ps`). Re-sweep on its re-read triggers (dot-product kernels, calibration,
+automatic format selection, adapter training, power-of-two block scales, merging into a quantized base). Fuel's
+kernels are exposed to the Nvidia pair US12045307B2/US12412082B2 (board 307). Routes: Google Patents (throttles
+after a few queries; single pages via C:\Projects	ools\patent-claims.py usually answer) and the USPTO image PDFs
+(WebFetch downloadPdf + PyMuPDF, US only). Scratchpad files vanish with the session.
 
 TODO after #10 lands: add q4_k..q6_k to the CI differential (build tools/golden/q*_k_reference.c with -DNDEBUG,
 convert_file support). Candidates: LoRA merge into a quantized base (ROADMAP row 11), GPTQ repack, calibration.
