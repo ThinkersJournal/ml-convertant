@@ -47,17 +47,20 @@ jobs:
       - name: Build ggml reference harnesses
         run: |
           mkdir -p out
-          for f in q8_0 q4_0; do
-            gcc -O2 -ffp-contract=off -w \
+          for f in q8_0 q4_0 q4_k q5_k q6_k; do
+            # -DNDEBUG as llama.cpp builds (the K-quant reference asserts on out-of-range intermediates).
+            gcc -O2 -DNDEBUG -ffp-contract=off -w \
               -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
               tools/golden/${f}_reference.c llama.cpp/ggml/src/ggml-quants.c -lm -o out/ref_$f
           done
-      - name: Build our converter
-        run: cargo build --release --locked -p ml-convertant-ggml --example convert_file
+      - name: Build our converters
+        run: |
+          cargo build --release --locked -p ml-convertant-ggml --example convert_file
+          cargo build --release --locked -p ml-convertant-kquants --example convert_kquants_file
       - name: Committed vectors reproduce from the pinned reference
         run: |
-          for f in q8_0 q4_0; do
-            g=crates/ml-convertant-ggml/tests/golden
+          for f in q8_0 q4_0 q4_k q5_k q6_k; do
+            case $f in *_k) g=crates/ml-convertant-kquants/tests/golden;; *) g=crates/ml-convertant-ggml/tests/golden;; esac
             out/ref_$f $g/$f.in.f32 out/$f.gold.bin out/$f.gold.deq
             cmp out/$f.gold.bin $g/$f.out.bin
             cmp out/$f.gold.deq $g/$f.deq.f32
@@ -66,9 +69,10 @@ jobs:
         run: |
           for seed in 1 2 3; do
             python tools/golden/gen_random_f32.py out/rand.f32 20000 $seed
-            for f in q8_0 q4_0; do
+            for f in q8_0 q4_0 q4_k q5_k q6_k; do
+              case $f in *_k) bin=convert_kquants_file;; *) bin=convert_file;; esac
               out/ref_$f out/rand.f32 out/ref.bin out/ref.deq
-              target/release/examples/convert_file $f out/rand.f32 out/our.bin out/our.deq
+              target/release/examples/$bin $f out/rand.f32 out/our.bin out/our.deq
               cmp out/ref.bin out/our.bin
               cmp out/ref.deq out/our.deq
               echo "$f seed $seed: $(wc -c < out/ref.bin) bytes identical"
