@@ -4,7 +4,7 @@ Date started: 2026-10-25; Run by: ml-convertant lane, Claude Sonnet 5.5; Method:
 
 Process: `C:\Projects\PATENT-SWEEP-PROCESS.md` (CireSnave, board 286 item 1).
 
-**Status: the search was blocked and most hits are UNREAD (fourteen read, see Hits).** Google Patents rate-limited this machine's IP
+**Status: the search was blocked and most hits are UNREAD (twenty-two read, see Hits).** Google Patents rate-limited this machine's IP
 (HTTP 503) after the first two queries, and every other source tried refused or could not be driven
 without a browser (see "Source status"). Nothing below is a clearance. Per the PM (2026-10-25): *"If all stay
 blocked, the sweep stays UNREAD for those hits and nothing publishes."* This file exists so the work done so
@@ -85,7 +85,7 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 
 ## Leads (NOT read; no verdict)
 
-Q1, Q10 and the second batch produced fourteen leads; they are now READ and moved to Hits (H1 to H14). Still unread:
+Q1, Q10 and the second batch produced twenty-two leads; they are now READ and moved to Hits (H1 to H22). Still unread:
 
 | patent | title | assignee | why it is a lead |
 |---|---|---|---|
@@ -123,6 +123,15 @@ Google Patents was throttled, so these are not machine-converted text.
 | H13 | EP3788557B1 (Microsoft; same family as H4) | Design flow for quantized neural networks | Microsoft | claim 1 (the only independent; read in full) | As H4 | Adds to H4's limitations "configuring a hardware accelerator ... implemented on an FPGA" with bit-widths from the FPGA's lookup-table size | clear |
 | H14 | US12585926B2 (Microsoft) | Adjusting precision and topology parameters for neural network training based on a performance metric | Microsoft | indep. 1, 8, 15 (claims 1 and 8 read; 15 by its opening) | Changes precision parameters | **Training**: forward and backward propagation per iteration and dynamic adjustment of a precision or topology parameter from a performance metric. We train nothing | clear |
 
+| H15 | EP3895075B1 (Microsoft) | Residual quantization for neural networks | Microsoft | claim 1 (read in full; the only independent shown) | Converts floating-point values to a common exponent and mantissas | Executing network: decomposing mantissas into quantized and residual values, **dot products** with weights, selectively performing a second dot product on the residual depending on needed precision, combining outputs. We run no network and compute no dot products | clear |
+| H16 | US12067495B2 (Microsoft) | Neural network activation compression with non-uniform mantissas | Microsoft | claim 1 (read in full) | Converts values to fewer mantissa bits | **Forward propagation** for a layer producing activations in a first floating-point format, converting them to a second format with fewer mantissa bits, storing them. Activation compression during execution; we convert stored weights offline | clear |
+| H17 | EP3906616B1 (Microsoft) | Neural network activation compression with outlier block floating-point | Microsoft | claim 1 (read to the shifter limitation) | Block format with a shared exponent | Activations of a neural network converted by an "outlier quantizer" to a block format plus outlier values for some activations, with a shifter that shifts mantissas to the shared exponent; activations, not weights; outliers stored separately | clear |
+| H18 | US20250061320A1 (Microsoft application) | Adjusting activation compression for neural network training | Microsoft | claim 1 (read in full) | Selecting a lower-precision format | Producing a network with activations, **selecting a second floating-point format "based on a value of a performance metric for the neural network"**, converting activations, storing them in bulk memory (training-time activation compression). We select no format from a network performance metric | clear |
+| H19 | CN113348474B (Microsoft; Chinese family member of US12067495B2) | Neural network activation compression with non-uniform mantissas | Microsoft | claim 1 (machine translation read to the compressor step) | as H16 | forward propagation on a layer, activation compression with shared exponent and non-uniform mantissas by a block floating-point compressor; activations during execution | clear |
+| H20 | CN113273082B (Microsoft; family of H17) | Neural network activation compression with outlier block floating point | Microsoft | claim 1 (machine translation read to the second conversion) | as H17 | generating activations for training data, determining outlier activation values with extra bits, converting to a block format with shared exponent; activations in training | clear |
+| H21 | US20250384257A1 (Intel application) | Machine learning sparse computation mechanism for arbitrary neural networks | Intel | claim 1 (read in full) | A matrix accelerator | A **graphics processor** with a hardware scheduler, multiprocessors, a matrix accelerator and offload circuitry. Hardware; we are software conversions | clear |
+| H22 | CN111937010B (Amazon) | Accelerated quantized multiplication and addition operations | Amazon | claim 1 (machine translation, read to the subtraction-engine step) | Linear quantization of floating-point values to n-bit integers with the minimum mapped to zero, the maximum to 2^n - 1 and floating-point zero represented exactly (the shape of an affine min/scale format such as Q4_K) | Concerns the **inputs to a convolutional layer at inference**: store the integers, "read ... by the convolutional layer", a **subtraction engine** subtracting the zero-point integer, and the following accelerated multiply-add. We convert stored weights offline; no convolution, no subtraction engine. Near on the quantization shape, so any future runtime kernel must be re-read against it | clear |
+
 **Flag for the PM, outside this repository (board 307):** H1 and H2 are about the arithmetic of running a quantized computation
 (multipliers at the reduced bitwidth, per-vector scaling of dot-products, accumulation; for H1 claims 1, 14 and 17 no layer is needed). That is the territory of
 Fuel's quantized matrix-multiplication kernels (`fuel-quantized` `vec_dot`, the W4A16 AWQ and NF4 kernels,
@@ -135,15 +144,15 @@ then be present.
 
 ### Still unread
 
-The remaining Microsoft block-floating-point family members surfaced by Q10 and A7 (EP3895075B1, CN113348474B,
-CN113273082B, EP3906616B1, US12067495B2, US20250061320A1), Intel US20250384257A1 and Amazon CN111937010B; they are
-fetched by the next pass and appended to Hits. The other ideas (3 NormalFloat, 5 dynamic map, 7 repack, 9 error
-reporting, 10 bit-exact verification) produced no relevant patent in any query (see Queries); that is a finding
-about these searches, not proof that none exists.
+No lead is left unread. The ideas with no relevant patent in any query (3 NormalFloat, 5 dynamic map, 7 repack, 9 error
+reporting, 10 bit-exact verification) are findings about these searches, not proof that none exists; Q3, Q15 and Q16
+never ran. Claims of H19, H20 and H22 were read in Google's machine translation. For H9 to H14, H16 to H18 and H21 the
+independent claims after claim 1 were identified by their opening words (and, for H9, H12 and H14, partly read) rather
+than read to the end; they are the system or medium counterparts of claim 1 in every case.
 
 ## Limitations
 
-- Incomplete: see Status. Fourteen patents were read (H1 to H14); queries Q3, Q15 and Q16 never ran and most other queries returned unrelated patents (see Queries). Several Microsoft block-floating-point family members are not yet read.
+- Incomplete: see Status. Twenty-two patents were read (H1 to H22); queries Q3, Q15 and Q16 never ran and most other queries returned unrelated patents (see Queries).
 - AI-assisted, machine-converted patent text (when it can be read); search coverage is whatever the sources
   return; the general web search tool is not a patent database.
 - Not legal advice; not a freedom-to-operate opinion. A lawyer's review is a separate, later purchase.
