@@ -9,9 +9,9 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-25.
 | 2 | Workspace skeleton + `ml-convertant-core` (`ErrorReport`, `Conversion`) | done |
 | 3 | Keystone: f32 <-> Q8_0, bound + llama.cpp golden vectors | done |
 | 4 | Q4_0 | done |
-| 5 | NF4 encode/decode, byte-exact vs the real bnb fixture | PR open |
-| 5b | NF4 double-quant absmax encode (dynamic map), bit-exact vs the fixture | PR open (stacked on 5) |
-| 6 | AWQ unpack/repack | |
+| 5 | NF4 encode/decode, byte-exact vs the real bnb fixture | done |
+| 5b | NF4 double-quant absmax encode (dynamic map), bit-exact vs the fixture | done |
+| 6 | AWQ unpack/pack/repack (lossless, identical to Fuel's repack) | PR open |
 | 7 | LoRA merge | |
 | 8 | mlmf glue (read -> convert -> write) | |
 

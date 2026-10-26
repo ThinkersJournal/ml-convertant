@@ -38,9 +38,27 @@
   above under Apache-2.0); the SHA-256 digests in `PROVENANCE.md` were re-checked against our copies.
   The licence text is `LICENSE-Qwen3-0.6B-Apache-2.0.txt` beside it.
 
+## AutoAWQ (MIT)
+
+- Origin: https://github.com/casper-hansen/AutoAWQ, commit `88e4c76b20755db275574e6a03c83c84ba3bece5`.
+  Licence: MIT.
+- What we use: the documented packing layout and order (`awq/modules/linear/gemm.py`
+  `WQLinear_GEMM.from_linear`, `order_map = [0, 2, 4, 6, 1, 3, 5, 7]`) and the unpack/dequantize
+  formulation in `awq/utils/packing_utils.py` (`AWQ_REVERSE_ORDER`, `dequantize_gemm`).
+  `ml-convertant-awq` is our own implementation; no AutoAWQ source is copied. Its tests re-derive
+  the unpacking with AutoAWQ's reverse-order formulation as an independent check.
+
+## Fuel awq_repack output (own code, MIT OR Apache-2.0)
+
+- `crates/ml-convertant-awq/tests/golden/fuel_repack.bin` records the output of Fuel's
+  `fuel-quantized/src/awq_repack.rs` (Fuel origin/main `d02dc578a7a7`, file last changed by Fuel commit
+  `35d8d966f7f1`) on seeded random input; generator and format in `tools/golden/fuel_awq/`. Output data
+  only; none of Fuel's code is copied here. Fuel's own origin note for that file: written against
+  AutoAWQ's GEMM layout and baracuda's `Int4AwqGemmArgs` documentation.
+
 ## half (MIT OR Apache-2.0)
 
-Dependency of `ml-convertant-ggml` (and dev-dependency of the NF4 tests) for f16/bf16 conversion, from crates.io.
+Dependency of `ml-convertant-ggml` and `ml-convertant-awq` (and dev-dependency of the NF4 tests) for f16/bf16 conversion, from crates.io.
 
 ## mlmf (MIT OR Apache-2.0)
 

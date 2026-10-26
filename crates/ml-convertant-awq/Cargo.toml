@@ -1,0 +1,16 @@
+[package]
+name = "ml-convertant-awq"
+description = "AWQ (4-bit, GEMM layout) pack, unpack and kernel repack with measured error: lossless and checked bit-exact."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "awq", "int4", "repack"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.6" }
+half = "2"

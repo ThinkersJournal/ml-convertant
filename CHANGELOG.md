@@ -4,6 +4,13 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.6]
+
+### Added
+- `ml-convertant-awq`: AWQ (GEMM) unpack, pack and OC-major kernel repack (`unpack_hf`, `pack_hf`,
+  `repack_for_kernel`, `HfToKernel`); lossless, reported as zero error; word-identical to Fuel's repack on
+  seeded layers. Not checked against a real AWQ checkpoint's bytes.
+
 ## [0.1.5]
 
 ### Added
