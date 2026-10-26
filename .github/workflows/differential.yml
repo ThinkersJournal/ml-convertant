@@ -47,7 +47,7 @@ jobs:
       - name: Build ggml reference harnesses
         run: |
           mkdir -p out
-          for f in q8_0 q4_0 q4_k q5_k q6_k; do
+          for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
             # -DNDEBUG as llama.cpp builds (the K-quant reference asserts on out-of-range intermediates).
             gcc -O2 -DNDEBUG -ffp-contract=off -w \
               -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
@@ -59,7 +59,7 @@ jobs:
           cargo build --release --locked -p ml-convertant-kquants --example convert_kquants_file
       - name: Committed vectors reproduce from the pinned reference
         run: |
-          for f in q8_0 q4_0 q4_k q5_k q6_k; do
+          for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
             case $f in *_k) g=crates/ml-convertant-kquants/tests/golden;; *) g=crates/ml-convertant-ggml/tests/golden;; esac
             out/ref_$f $g/$f.in.f32 out/$f.gold.bin out/$f.gold.deq
             cmp out/$f.gold.bin $g/$f.out.bin
@@ -69,7 +69,7 @@ jobs:
         run: |
           for seed in 1 2 3; do
             python tools/golden/gen_random_f32.py out/rand.f32 20000 $seed
-            for f in q8_0 q4_0 q4_k q5_k q6_k; do
+            for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
               case $f in *_k) bin=convert_kquants_file;; *) bin=convert_file;; esac
               out/ref_$f out/rand.f32 out/ref.bin out/ref.deq
               target/release/examples/$bin $f out/rand.f32 out/our.bin out/our.deq
