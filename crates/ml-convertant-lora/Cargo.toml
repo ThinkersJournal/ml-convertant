@@ -1,0 +1,15 @@
+[package]
+name = "ml-convertant-lora"
+description = "Merge a LoRA adapter into base weights (W + scale * B @ A) with a measured, bounded error."
+readme = "README.md"
+keywords = ["machine-learning", "lora", "peft", "merge", "adapter"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.6" }

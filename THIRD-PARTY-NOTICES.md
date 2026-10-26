@@ -56,6 +56,15 @@
   only; none of Fuel's code is copied here. Fuel's own origin note for that file: written against
   AutoAWQ's GEMM layout and baracuda's `Int4AwqGemmArgs` documentation.
 
+## PEFT (Apache-2.0)
+
+- Origin: https://github.com/huggingface/peft, commit `7d6315ae910bf62b6044a7ca917bccf5881f5e43`.
+  Licence: Apache-2.0.
+- What we use: the documented LoRA merge formula and tensor layouts
+  (`src/peft/tuners/lora/layer.py`: `get_delta_weight` = `(lora_B.weight @ lora_A.weight) * scaling`,
+  `merge` adds it to the base weight; scaling `lora_alpha / r`, or `lora_alpha / sqrt(r)` with
+  `use_rslora`). `ml-convertant-lora` is our own implementation; no PEFT source is copied.
+
 ## half (MIT OR Apache-2.0)
 
 Dependency of `ml-convertant-ggml` and `ml-convertant-awq` (and dev-dependency of the NF4 tests) for f16/bf16 conversion, from crates.io.

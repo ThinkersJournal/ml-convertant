@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.9]
+
+### Added
+- `ml-convertant-lora`: offline LoRA merge (`merge_lora`, `LoraAdapter`, `LoraMerge`, `lora_merge_bound`) in f32 with a
+  fixed accumulation order, reported against an f64 reference with a proven bound. Not compared against PEFT-merged weights.
+
 ## [0.1.8]
 
 ### Added
