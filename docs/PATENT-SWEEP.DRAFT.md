@@ -4,7 +4,7 @@ Date started: 2026-10-25; Run by: ml-convertant lane, Claude Sonnet 5.5; Method:
 
 Process: `C:\Projects\PATENT-SWEEP-PROCESS.md` (CireSnave, board 286 item 1).
 
-**Status: the search was blocked and most hits are UNREAD (six read, see Hits).** Google Patents rate-limited this machine's IP
+**Status: the search was blocked and most hits are UNREAD (fourteen read, see Hits).** Google Patents rate-limited this machine's IP
 (HTTP 503) after the first two queries, and every other source tried refused or could not be driven
 without a browser (see "Source status"). Nothing below is a clearance. Per the PM (2026-10-25): *"If all stay
 blocked, the sweep stays UNREAD for those hits and nothing publishes."* This file exists so the work done so
@@ -80,12 +80,12 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 | Q13 | 7 | asymmetric group-wise quantization zero point packed with weights scales per group | same | none relevant except CN111937010B (Amazon, "Accelerated quantized multiplication and addition operations": compute-side; unread) |
 | Q14 | 9 | worst-case quantization error bound per block scale rounding neural network weights | same | none relevant (Cerebras compute fabric, video coding) |
 | Q15, Q16 | 10, 9 | (queued) | same | never ran |
-| A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize) | Google Patents XHR, started 2026-10-26 | see "Second batch" below |
+| A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize), 2026-10-26 | Google Patents XHR | mostly unrelated (video coding, wireless sensing, hardware safety); A7 repeated the Nvidia/Microsoft cluster; A8 found MathWorks EP3843013A1 (H7); A10 found EP3788557B1 (H13); A5, A6, A9, A11, A12 found nothing relevant |
 | W1 to W5 | 1, 3, 5, 7, 8 | five phrasings of the above through the web search tool (two restricted to Google Patents and Justia) | web search | no patent claims; leads only (EP4341862A1) |
 
 ## Leads (NOT read; no verdict)
 
-Q1 and Q10 produced six US leads; they are now READ and moved to Hits (H1 to H6). Still unread:
+Q1, Q10 and the second batch produced fourteen leads; they are now READ and moved to Hits (H1 to H14). Still unread:
 
 | patent | title | assignee | why it is a lead |
 |---|---|---|---|
@@ -114,6 +114,15 @@ Google Patents was throttled, so these are not machine-converted text.
 | H5 | US12443848B2 | Neural network activation compression with narrow block floating-point | Microsoft | indep. 1, 10, 17 (read; claim 17 to its visible end) | Converts values between block floating-point formats of different precision | All three are about **training**: forward propagation per layer producing activations in a first BFP format, converting them to a lower-precision second format, storing them, calculating a loss, retrieving and decompressing them, and backpropagating. We handle weights offline, with no layers, activations, loss or backpropagation | clear |
 | H6 | US10167800B1 (priority 2017-08-18) | Hardware node having a matrix vector unit with block-floating point processing | Microsoft | indep. 1, 7, 14 (read in full) | Closest on the block side: "first process a first subset of the [vector data] to determine a first shared exponent ... second subset ... a second shared exponent ... in a manner that no vector data from the second subset influences the first shared exponent", i.e. independently determined per-block shared factors, as in every block format here | Each independent claim is tied to a **matrix vector unit** processing "vector data corresponding to at least one layer of a neural network model" (claim 1 also a message processor, scalar processor and a pipeline of multifunction units), and the shared quantity is an **exponent** of floating-point data. Our scales are real-valued multipliers (f16/f32), not exponents, and we run no matrix vector unit. The nearest claim on the format side; a power-of-two-scale block format (e.g. MX-style E8M0) or any hardware-oriented code would need a fresh read | clear |
 
+| H7 | EP3843013A1 (MathWorks, pending) | Systems and methods for quantizing a neural network | MathWorks | claim 1 (the only independent; read in full, Google Patents text) | Quantizing floating-point values to integer or fixed point | Requires determining points within a network that generate numeric values, **presenting visualizations of statistics** and of performance information, quantizing "based on ... characteristics of the one or more target hardware devices", and **generating code** for the quantized network. We do none of these | clear |
+| H8 | EP4341862A1 (Microsoft, pending) | Low-rank adaptation of neural network models | Microsoft | claim 1 (the only independent method; claims 11-12 incorporate 1-10) | Base weight matrices plus low-rank factorization matrices; dependent claims 8-9 combine them for inference and remove them by subtracting | Claim 1 requires adding low-rank matrices "treated as trainable parameters" and **training the domain model with domain-specific data without modifying the base weights**. Our merge performs no training: it adds an already-trained adapter to the weights offline | clear (the training step is absent). Priority 2021-05-19; the merge arithmetic itself is described in dependent claims 8-9, so any future feature that trains adapters must be re-read |
+| H9 | US12099930B2 (TI, active, expiry est. 2043) | Parametric power-of-2 clipping activations for quantization for convolutional neural networks | Texas Instruments | indep. 1, 10, 17 (claim 1 read in full; 10 and 17 read to the end of the quantizing steps: same limitations in system and medium form) | Quantization with a clipping value | Requires receiving image data through a capture subsystem and quantizing with a power-of-2 parametric activation function: **histogram of the data, discard the histogram tail, estimate a maximum, determine a new maximum with a moving average over historical values, clip to the nearest power of two**. We do none of these on weights. **Relevant if calibration (idea 11) is built: do not combine tail-discard, moving-average maximum and power-of-two clipping** | clear |
+| H10 | US20230342613A1 (Alphaics, abandoned) | System and method for integer only quantization aware training on edge devices | Alphaics | indep. 1, 8 (read) | Integer quantization | Training: pseudo cross-entropy, gradient stabilization, back propagation, residual weight error. We train nothing. Status abandoned (Google Patents) | clear |
+| H11 | US12417389B2 (Adobe) | Efficient mixed-precision search for quantizers in artificial neural networks | Adobe | indep. 1, 12, 16 (claim 1 read in full; 12 read to the first elements) | Choosing a bit-width per layer | **Training** an ANN with a "folding quantizer" of alternatively sampled candidate quantizers and a parallel full-precision edge, weighted sums, converging to a fixed quantizer. We choose no bit-widths by training or search | clear |
+| H12 | US20220044114A1 (Nvidia, application) | Hybrid quantization of neural networks for edge computing applications | Nvidia | indep. 1, 10, 16 (read in full) | Changes precision of weights | "Changing precision ... of a portion of a neural network to generate a first trained model" then more layers to a second trained model, during **training**, by quantization-aware training. We train nothing | clear |
+| H13 | EP3788557B1 (Microsoft; same family as H4) | Design flow for quantized neural networks | Microsoft | claim 1 (the only independent; read in full) | As H4 | Adds to H4's limitations "configuring a hardware accelerator ... implemented on an FPGA" with bit-widths from the FPGA's lookup-table size | clear |
+| H14 | US12585926B2 (Microsoft) | Adjusting precision and topology parameters for neural network training based on a performance metric | Microsoft | indep. 1, 8, 15 (claims 1 and 8 read; 15 by its opening) | Changes precision parameters | **Training**: forward and backward propagation per iteration and dynamic adjustment of a precision or topology parameter from a performance metric. We train nothing | clear |
+
 **Flag for the PM, outside this repository (board 307):** H1 and H2 are about the arithmetic of running a quantized computation
 (multipliers at the reduced bitwidth, per-vector scaling of dot-products, accumulation; for H1 claims 1, 14 and 17 no layer is needed). That is the territory of
 Fuel's quantized matrix-multiplication kernels (`fuel-quantized` `vec_dot`, the W4A16 AWQ and NF4 kernels,
@@ -126,13 +135,15 @@ then be present.
 
 ### Still unread
 
-US12099930B2 and US20230342613A1 (inherited from the MLMF lane; relevant only if idea 11 is built); EP4341862A1
-(LoRA; not a US document, needs Google Patents or Espacenet); the Microsoft block-floating-point family members listed
-under Q10; CN111937010B; and whatever the second batch returns.
+The remaining Microsoft block-floating-point family members surfaced by Q10 and A7 (EP3895075B1, CN113348474B,
+CN113273082B, EP3906616B1, US12067495B2, US20250061320A1), Intel US20250384257A1 and Amazon CN111937010B; they are
+fetched by the next pass and appended to Hits. The other ideas (3 NormalFloat, 5 dynamic map, 7 repack, 9 error
+reporting, 10 bit-exact verification) produced no relevant patent in any query (see Queries); that is a finding
+about these searches, not proof that none exists.
 
 ## Limitations
 
-- Incomplete: see Status. Six patents were read (H1 to H6); queries Q3, Q15 and Q16 never ran and Q4 to Q14 returned mostly unrelated patents (see Queries).
+- Incomplete: see Status. Fourteen patents were read (H1 to H14); queries Q3, Q15 and Q16 never ran and most other queries returned unrelated patents (see Queries). Several Microsoft block-floating-point family members are not yet read.
 - AI-assisted, machine-converted patent text (when it can be read); search coverage is whatever the sources
   return; the general web search tool is not a patent database.
 - Not legal advice; not a freedom-to-operate opinion. A lawyer's review is a separate, later purchase.
