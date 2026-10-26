@@ -4,6 +4,13 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.19]
+
+### Added
+- `ml-convertant-lora`: merge into a quantized base (`merge_lora_into_quantized`, `QuantFormat`, `RequantError`) for Q8_0, Q4_0 and
+  Q2_K to Q6_K: dequantize, merge in f32, requantize; error of the chain against an f64 reference of the exact merge of the
+  dequantized base, with a proven bound (merge bound + the format's requantization bound).
+
 ## [0.1.18]
 
 ### Changed

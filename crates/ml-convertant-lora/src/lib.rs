@@ -31,6 +31,9 @@
 //! report counts them.
 
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
+
+mod quantized;
+pub use quantized::{QuantFormat, RequantError, merge_lora_into_quantized};
 use std::fmt;
 
 /// Why a LoRA merge failed.
