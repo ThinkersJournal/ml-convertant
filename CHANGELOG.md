@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.15]
+
+### Changed
+- `ROADMAP.md` statuses brought current (rows 0, 6, 7, 7b, 10-10d done; rows 8 and 11 open with an owner).
+
 ## [0.1.14]
 
 ### Added
