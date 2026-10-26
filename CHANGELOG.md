@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.8]
+
+### Added
+- `docs/PATENT-SWEEP.md`: first patent sweep record (22 patents read, all clear for conversions; re-read triggers listed).
+
 ## [0.1.7]
 
 ### Added

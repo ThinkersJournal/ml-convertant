@@ -1,17 +1,19 @@
-# Patent sweep: ml-convertant 0.1.x (DRAFT, INCOMPLETE: NOT CLEARED FOR PUBLICATION; renamed to PATENT-SWEEP.md only when complete)
+# Patent sweep: ml-convertant 0.1.x @ main 042764f plus open PRs #10-#15 (first record, 2026-10-26)
 
-Date started: 2026-10-25; Run by: ml-convertant lane, Claude Sonnet 5.5; Method: AI-assisted search and read; NOT legal advice; NOT a freedom-to-operate opinion.
+Date: 2026-10-25 to 2026-10-26; Run by: ml-convertant lane, Claude Sonnet 5.5; Method: AI-assisted search and read; NOT legal advice; NOT a freedom-to-operate opinion.
 
 Process: `C:\Projects\PATENT-SWEEP-PROCESS.md` (CireSnave, board 286 item 1).
 
-**Status: the search was blocked and most hits are UNREAD (twenty-two read, see Hits).** Google Patents rate-limited this machine's IP
-(HTTP 503) after the first two queries, and every other source tried refused or could not be driven
-without a browser (see "Source status"). Nothing below is a clearance. Per the PM (2026-10-25): *"If all stay
-blocked, the sweep stays UNREAD for those hits and nothing publishes."* This file exists so the work done so
-far, the ideas to be swept and the leads are recorded; it is completed (queries, claims read, verdicts)
-before the first publish, and the PM checks for it then.
+**Status: complete as an AI-assisted first pass, with the limits listed below. No `needs-review` hit.** Twenty-two
+patents were read (H1 to H22) and every verdict is `clear` for ML-ConvertAnt as it is today: a library that converts
+model data offline (quantize, dequantize, repack, merge) and runs no network, no training and no dot-product
+arithmetic. Google Patents rate-limited this machine for most of a day (HTTP 503); the other sources were refused
+or unusable (see "Source status"); the claims were read from Google Patents' text where it answered and from the
+USPTO's scanned PDFs (read as images) otherwise. Several hits are clear only because of a limitation we lack
+(a multiplier or dot-product step, a layer, training, a loss function, a matrix vector unit); the record says which,
+and "Re-read triggers" below lists what would change the verdicts.
 
-Commit swept (once complete): the workspace at the time of reading, version line 0.1.x.
+Commit swept: `origin/main` `042764f` (version 0.1.6) with the open PRs #10 (differential workflow), #11 (LoRA merge) and #12 to #15 (K-quants) read as source; version line **0.1.x** of the manifest (`Cargo.toml` `[workspace.package] version`).
 
 ## Ideas swept (the mechanisms, as claim-like sentences)
 
@@ -45,7 +47,7 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     INT8/INT4; dynamic and static) (the code removed from MLMF; ROADMAP "candidates").
 12. Merging a LoRA adapter into a quantized base (dequantize, merge, requantize) (ROADMAP row 11).
 
-## Source status (what was tried on 2026-10-25, and what happened)
+## Source status (what was tried on 2026-10-25 and 26, and what happened)
 
 | source | access | result |
 |---|---|---|
@@ -74,32 +76,25 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 | Q7 | 7 | repack quantized weights layout matrix multiplication kernel interleave 4-bit packed integer words | same | 4 results, none relevant |
 | Q8 | 9 | report quantization error each tensor conversion maximum absolute error mean error model conversion | same | none relevant |
 | Q9 | 12 | dequantize quantized weights apply low-rank update requantize merged weights | same | none relevant (video coding) |
-| Q10 | 1, 2, 6 | block floating point shared scale per block of weights 32 elements neural network | same | **relevant**: Nvidia H1/H2, Microsoft H4 to H6 (and unread Microsoft CN113348474B, EP3895075B1, US12585926B2, CN113273082B, US20250384257A1 Intel) |
+| Q10 | 1, 2, 6 | block floating point shared scale per block of weights 32 elements neural network | same | **relevant**: Nvidia H1/H2, Microsoft H4 to H6 (also read: Microsoft H13 to H20 and Intel H21) |
 | Q11 | 6 | super-block quantization scales quantized minimums hierarchical scale weights | same | none relevant (video/entropy coding) |
 | Q12 | 1, 2 | packing 4-bit weights two per byte nibble block scale half precision large language model | same | none relevant (ray tracing hardware) |
-| Q13 | 7 | asymmetric group-wise quantization zero point packed with weights scales per group | same | none relevant except CN111937010B (Amazon, "Accelerated quantized multiplication and addition operations": compute-side; unread) |
+| Q13 | 7 | asymmetric group-wise quantization zero point packed with weights scales per group | same | none relevant except CN111937010B (Amazon, compute-side; read as H22) |
 | Q14 | 9 | worst-case quantization error bound per block scale rounding neural network weights | same | none relevant (Cerebras compute fabric, video coding) |
 | Q15, Q16 | 10, 9 | (queued) | same | never ran |
 | A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize), 2026-10-26 | Google Patents XHR | mostly unrelated (video coding, wireless sensing, hardware safety); A7 repeated the Nvidia/Microsoft cluster; A8 found MathWorks EP3843013A1 (H7); A10 found EP3788557B1 (H13); A5, A6, A9, A11, A12 found nothing relevant |
 | W1 to W5 | 1, 3, 5, 7, 8 | five phrasings of the above through the web search tool (two restricted to Google Patents and Justia) | web search | no patent claims; leads only (EP4341862A1) |
 
-## Leads (NOT read; no verdict)
+## Leads
 
-Q1, Q10 and the second batch produced twenty-two leads; they are now READ and moved to Hits (H1 to H22). Still unread:
+Every lead the searches produced was read and is in Hits (H1 to H22). Background that is prior art, not patents
+(recorded so a later reader does not re-derive it): the ggml block formats are open source (MIT) and predate this
+work; NF4 and double quantization are published in the QLoRA paper (Dettmers et al.) and implemented in
+bitsandbytes (MIT); AWQ is published (Lin et al.) and AutoAWQ is MIT; LoRA is published (Hu et al.) and PEFT is
+Apache-2.0. A published method can still be claimed by a patent filed earlier or by a different party; none of this
+clears anything.
 
-| patent | title | assignee | why it is a lead |
-|---|---|---|---|
-| EP4341862A1 | Low-rank adaptation of neural network models | (not yet identified) | LoRA; claims not seen; near idea 8 |
-| US12099930B2 | (TI) histogram tail-discard, moving-average maximum, power-of-two clip | Texas Instruments | inherited from the MLMF lane's sweep; they read its claims and found it clear against MLMF's old code, **not against us if we add calibration** (idea 11) |
-| US20230342613A1 | integer-only QAT | Alphaics | same: inherited from the MLMF lane; relevant only if idea 11 is built |
-
-Background that is prior art, not patents (recorded so a later reader does not re-derive it): the ggml block
-formats are open source (MIT) and predate this work; NF4 and double quantization are published in the QLoRA
-paper (Dettmers et al.) and implemented in bitsandbytes (MIT); AWQ is published (Lin et al.) and AutoAWQ is MIT;
-LoRA is published (Hu et al.) and PEFT is Apache-2.0. A published method can still be claimed by a patent filed
-earlier or by a different party; none of this clears anything.
-
-## Hits (read so far)
+## Hits
 
 Read on 2026-10-25 from the USPTO's scanned grant/publication PDFs (`image-ppubs.uspto.gov`, fetched with the
 web fetch tool, rendered with PyMuPDF, claim pages read as images). The independent claims were read in full.
@@ -142,7 +137,7 @@ If ML-ConvertAnt ever adds quantized matrix multiplication or inference, H1 and 
 code: the limitation that makes them clear for conversions (a multiply/scale/accumulate step on quantized vectors) would
 then be present.
 
-### Still unread
+### Reading limits
 
 No lead is left unread. The ideas with no relevant patent in any query (3 NormalFloat, 5 dynamic map, 7 repack, 9 error
 reporting, 10 bit-exact verification) are findings about these searches, not proof that none exists; Q3, Q15 and Q16
@@ -150,9 +145,20 @@ never ran. Claims of H19, H20 and H22 were read in Google's machine translation.
 independent claims after claim 1 were identified by their opening words (and, for H9, H12 and H14, partly read) rather
 than read to the end; they are the system or medium counterparts of claim 1 in every case.
 
+## Re-read triggers
+
+Sweep again (new mechanism, per `PATENT-SWEEP-PROCESS.md`) before shipping any of:
+
+- quantized matrix multiplication, a dot-product kernel, or inference of any kind (H1, H2, H6, H15, H22 become relevant);
+- calibration: histogram, percentile or entropy statistics, a moving-average maximum, power-of-two clipping (H9);
+- choosing a format automatically from measured error or from a model's output (H4, H18);
+- training adapters or quantization-aware training (H8, H10, H11, H12, H14);
+- a power-of-two (exponent-only) block scale, MX-style formats, or hardware-targeted code (H6, H13);
+- merging into a quantized base (ROADMAP row 11) re-reads H8 and the quantization hits.
+
 ## Limitations
 
-- Incomplete: see Status. Twenty-two patents were read (H1 to H22); queries Q3, Q15 and Q16 never ran and most other queries returned unrelated patents (see Queries).
+- Coverage: twenty-two patents were read (H1 to H22); queries Q3, Q15 and Q16 never ran and most other queries returned unrelated patents (see Queries). For H9 to H14, H16 to H18 and H21 the independent claims after claim 1 were not read to the end (see Hits, last note).
 - AI-assisted, machine-converted patent text (when it can be read); search coverage is whatever the sources
   return; the general web search tool is not a patent database.
 - Not legal advice; not a freedom-to-operate opinion. A lawyer's review is a separate, later purchase.
