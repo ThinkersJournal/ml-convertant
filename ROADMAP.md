@@ -20,6 +20,6 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-26.
 | 10b | K-quants: Q5_K (bit-exact vs ggml) | done |
 | 10c | K-quants: Q6_K (bit-exact vs ggml) | done |
 | 10d | K-quants: Q2_K and Q3_K (bit-exact vs ggml) | done |
-| 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | open, no blocker, owner: this lane (next) |
+| 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | PR open |
 
 Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).
