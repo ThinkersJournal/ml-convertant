@@ -14,12 +14,12 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-26.
 | 6 | AWQ unpack/pack/repack (lossless, identical to Fuel's repack) | done |
 | 7 | LoRA merge (f32, bounded; vs f64 reference) | done |
 | 7b | llama.cpp differential on hosted runners (gcc, pinned commit) | done |
-| 8 | mlmf glue (read -> convert -> write) | PR open (GGUF; safetensors later) |
+| 8 | mlmf glue (read -> convert -> write) | done (GGUF; safetensors later) |
 | 9 | Patent sweep: `docs/PATENT-SWEEP.md` (first record 2026-10-26: 22 read, all clear; re-sweep per its re-read triggers) | done (first pass) |
 | 10 | K-quants: Q4_K (bit-exact vs ggml) | done |
 | 10b | K-quants: Q5_K (bit-exact vs ggml) | done |
 | 10c | K-quants: Q6_K (bit-exact vs ggml) | done |
 | 10d | K-quants: Q2_K and Q3_K (bit-exact vs ggml) | done |
-| 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | PR open |
+| 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | done |
 
 Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).
