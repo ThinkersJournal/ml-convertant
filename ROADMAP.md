@@ -22,4 +22,6 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-26.
 | 10d | K-quants: Q2_K and Q3_K (bit-exact vs ggml) | done |
 | 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | done |
 
+**First release held** on board item 307 (CireSnave's ruling on PATENT-SWEEP H1/H2, Nvidia US12045307B2 / US12412082B2); release prep is done (#23).
+
 Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).

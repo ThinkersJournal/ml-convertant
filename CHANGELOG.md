@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.22]
+
+### Changed
+- Docs only: HANDOFF and ROADMAP record the first-release hold (board item 307).
+
 ## [0.1.21]
 
 ### Added
