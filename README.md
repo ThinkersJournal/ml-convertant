@@ -5,6 +5,24 @@ unpacking, merging (such as LoRA), each reporting its measured error.
 
 MLMF reads and writes model files and does not transform the data inside them; this project does.
 
+## Hello: quantize a GGUF
+
+```rust
+use ml_convertant::mlmf::{Outcome, Plan, Target, convert_gguf};
+
+let out = convert_gguf(&std::fs::read("in.gguf")?, &Plan::new(Target::Q8_0))?; // or Target::Q4_0
+std::fs::write("out.gguf", &out.bytes)?;
+for t in &out.tensors {
+    if let Outcome::Converted { report, .. } = &t.outcome {
+        println!("{}: max error {:.3e}, rmse {:.3e}", t.name, report.max_abs, report.rmse);
+    }
+}
+```
+
+Every tensor of rank two or more with whole 32-element rows is converted; everything else is carried over
+unchanged and listed with the reason. The error is measured against the source values, never assumed. A runnable
+version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
+
 | crate | status |
 |---|---|
 | `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.1) |
