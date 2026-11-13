@@ -2,7 +2,7 @@
 
 State 2026-11-12. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.22 at 6c827a2):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double
+**On main (0.1.22 at 6c827a2; #25 makes it 0.1.23):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double
 quantization), awq (unpack/pack/repack), lora (merge; merge into a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF
 in/out), CI differential vs llama.cpp (ubuntu+windows, Q8_0..Q6_K), `docs/PATENT-SWEEP.md`. Branch protection: 5 required checks.
 
@@ -20,8 +20,7 @@ differential for other formats.
 (harnesses `tools/golden/*_reference.c`, -DNDEBUG for the K-quants, MSVC locally, gcc in CI). NF4 encoder reproduces a real
 bitsandbytes checkpoint byte for byte. AWQ repack is identical to Fuel's, NOT checked against a real AWQ checkpoint. LoRA
 merge is NOT compared with PEFT-merged weights. The glue adds `general.quantization_version` = 2 only when it converted
-something and the input lacked it. Path-dep minimum versions in crate manifests are uneven (core 0.1.3/0.1.5/0.1.6, ggml and
-kquants 0.1.16 in lora); harmless to publish, the PM's version pass may normalize them.
+something and the input lacked it. Version 0.1.23 (PM-allocated) set on every crate and path-dep minimum in #25.
 
 **Patent sweep:** first record done; re-read triggers are in `docs/PATENT-SWEEP.md`. Google Patents throttles after a few
 queries (use C:\Projects\tools\patent-claims.py); USPTO image PDFs via WebFetch downloadPdf + PyMuPDF work for US documents.
