@@ -7,10 +7,12 @@ quantization), awq (unpack/pack/repack), lora (merge; merge into a quantized bas
 in/out), CI differential vs llama.cpp (ubuntu+windows, Q8_0..Q6_K), `docs/PATENT-SWEEP.md`. Branch protection: 5 required checks.
 
 **FIRST RELEASE (PM [TASK] 2026-11-12; board 307 ruled 2026-11-01 option C; CireSnave asked the PM to publish):** the PM publishes
-and allocates the version (fragments only, no version edits). Steps: (1) per-crate H1/H2 re-read in PATENT-SWEEP, (2) mlmf pins
-to ~0.11.29, (3) this HANDOFF, (4) new MLMF-free `crates/ml-convertant-names` (PEFT<->GGUF tensor names, ruling 421), (5) release
-prep per crate in dependency order, one version for all. Steps 1-3 are in the PR from branch `release-prep` (worktree
-`ml-convertant-wt-release`). Step 4 waits on the text of ruling 421 (not found in the top-level decision files; asked the PM).
+and allocates the version (0.1.23). Steps: (1) per-crate H1/H2 re-read in PATENT-SWEEP, (2) mlmf pins to ~0.11.29, (3) this
+HANDOFF, all in #25 (branch `release-prep`, worktree `ml-convertant-wt-release`); (4) new MLMF-free `crates/ml-convertant-names`
+(PEFT<->GGUF tensor names, ruling 421: Llama-style layout, both directions, others refused), branch `names-crate`, worktree
+`ml-convertant-wt-names`, own PR after #25 merges (rebase onto it: both touch CHANGELOG, and the names crate needs 0.1.23);
+(5) release prep per crate in dependency order: the PM publishes. Next row after names: adapter strength/scale adjustment after
+load, before use (ruling 421 Q2; MLMF only loads and saves).
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
