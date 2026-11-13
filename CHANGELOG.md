@@ -4,6 +4,13 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.23]
+
+### Changed
+- `mlmf-core`, `mlmf-ggml`, `mlmf-gguf`, `mlmf-bnb`, `mlmf-safetensors` pins raised from `~0.7.x` to `~0.11.29` (crates.io latest); workspace builds and tests pass.
+- `docs/PATENT-SWEEP.md`: board 307 ruled (2026-11-01, option C); per-crate re-read of the Nvidia pair US12045307B2 / US12412082B2 recorded (a reading, not legal advice).
+- `HANDOFF.md` rewritten without the release hold.
+
 ## [0.1.22]
 
 ### Changed

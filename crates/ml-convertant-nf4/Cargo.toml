@@ -12,10 +12,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.5" }
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.23" }
 
 [dev-dependencies]
 half = "2"
-mlmf-bnb = "~0.7.15"
-mlmf-core = "~0.7.15"
-mlmf-safetensors = "~0.7.15"
+mlmf-bnb = "~0.11.29"
+mlmf-core = "~0.11.29"
+mlmf-safetensors = "~0.11.29"

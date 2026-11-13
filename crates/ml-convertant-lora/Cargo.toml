@@ -12,6 +12,6 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.6" }
-ml-convertant-ggml = { path = "../ml-convertant-ggml", version = "0.1.16" }
-ml-convertant-kquants = { path = "../ml-convertant-kquants", version = "0.1.16" }
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.23" }
+ml-convertant-ggml = { path = "../ml-convertant-ggml", version = "0.1.23" }
+ml-convertant-kquants = { path = "../ml-convertant-kquants", version = "0.1.23" }

@@ -45,7 +45,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "ml-convertant"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "ml-convertant-awq",
  "ml-convertant-core",
@@ -58,7 +58,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-awq"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -66,11 +66,11 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-core"
-version = "0.1.22"
+version = "0.1.23"
 
 [[package]]
 name = "ml-convertant-ggml"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -78,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-kquants"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -86,7 +86,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-lora"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "ml-convertant-core",
  "ml-convertant-ggml",
@@ -95,7 +95,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-mlmf"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -108,7 +108,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-nf4"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -119,9 +119,9 @@ dependencies = [
 
 [[package]]
 name = "mlmf-bnb"
-version = "0.7.26"
+version = "0.11.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a00cb98ca790a04a9ee4724cbd1b57da824fd69af42b0e941ebe33267f2edb5"
+checksum = "b04c471c0ad5a334330a70369bfffd522488ceaaf36273e8f6e9b152f947da56"
 dependencies = [
  "mlmf-core",
  "serde_json",
@@ -129,9 +129,9 @@ dependencies = [
 
 [[package]]
 name = "mlmf-core"
-version = "0.7.26"
+version = "0.11.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eab15bd9e39e6ebf7f8358bd74a1b2a18e1d2d98ecf57938604cda934ee5f6ae"
+checksum = "3057e748abf6a64d8191ac8a3507b9389dac3cac3e0d0ea58e98f1022b039932"
 dependencies = [
  "bytemuck",
  "smallvec",
@@ -140,18 +140,18 @@ dependencies = [
 
 [[package]]
 name = "mlmf-ggml"
-version = "0.7.26"
+version = "0.11.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9602a3df93e8d38a432c3cd61c7962b203e130c912352d1fddb33e3658d2456b"
+checksum = "bb8b169a54381866aeb14f71ec40a60384964129edc95665865ba4d86596aa28"
 dependencies = [
  "mlmf-core",
 ]
 
 [[package]]
 name = "mlmf-gguf"
-version = "0.7.26"
+version = "0.11.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e53ed051f3787596f39e8595e5b1b8d9590f85e8451d3149e2583238968a7e1"
+checksum = "bc454506d840801c2327193f7ed39a0e8b0095007767538ddf0c7727a70e0759"
 dependencies = [
  "mlmf-core",
  "mlmf-ggml",
@@ -159,9 +159,9 @@ dependencies = [
 
 [[package]]
 name = "mlmf-safetensors"
-version = "0.7.26"
+version = "0.11.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34393079a5f717f3fa393b813d7376b331362e45b944fe8002f656e029db0f37"
+checksum = "98ca82adfea5d91cc56a6159b586b9f9820a3484e31941c41dc4941c1da35167"
 dependencies = [
  "mlmf-core",
  "serde_json",
