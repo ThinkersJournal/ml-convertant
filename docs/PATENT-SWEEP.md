@@ -146,8 +146,11 @@ then be present.
 
 ### Per-crate read against H1 and H2 (2026-11-12, `origin/main` 6c827a2; ml-convertant lane, AI-assisted; NOT legal advice)
 
-Board 307 was ruled 2026-11-01 (option C), per the PM's message of 2026-11-12; the ruling records ml-convertant as clear because it
-has no dot products (the PM's reading, not legal advice). This section is the lane's own re-read of the code against the limitation
+Board 307 was ruled by CireSnave on 2026-11-01, option C (design around: Fuel's integer-dot kernels stay out of its published crate, the
+floating-point route is the CPU default, no contact with Nvidia). His words, verbatim, from the board archive
+(`C:\Projects\.lane-state\CIRESNAVE-DECIDED-ARCHIVE.pre-310final.md`, item 307): *"Okay. Lets stick with removing the integer kernels.  If we
+don't have permission to use them, I'm not a thief or pirate."* The ruling acts on Fuel's kernels. It leaves nothing to remove here: the PM
+records ml-convertant as clear because it has no dot products (the PM's reading, not legal advice). This section is the lane's own re-read of the code against the limitation
 each Nvidia claim turns on. The claim text is the transcription in rows H1 and H2 above; it was not re-fetched. Question per crate:
 does the code perform (H1 claims 1, 14, 17) a vector dot-product on quantized parameters with multipliers at the reduced bitwidth,
 scaled per vector and accumulated into an output tensor, or (H2) processing of reduced-bitwidth vectors with multiplier circuits in a layer?
