@@ -112,7 +112,7 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 | Q15, Q16 | 10, 9 | (queued) | same | never ran |
 | A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize), 2026-10-26 | Google Patents XHR | mostly unrelated (video coding, wireless sensing, hardware safety); A7 repeated the Nvidia/Microsoft cluster; A8 found MathWorks EP3843013A1 (H7); A10 found EP3788557B1 (H13); A5, A6, A9, A11, A12 found nothing relevant |
 | W1 to W5 | 1, 3, 5, 7, 8 | five phrasings of the above through the web search tool (two restricted to Google Patents and Justia) | web search | no patent claims; leads only (EP4341862A1) |
-| W6, W7 | 11 | calibration data importance weights per-channel scaling activation statistics; activation-aware weight quantization salient channels (web search, 2026-11-15) | web search | no patent or claim text returned, only papers (AWQ, GPTQ, 2026 calibration preprints); no new lead. H9 stays the nearest read |
+| W6, W7 | 11 | calibration data importance weights per-channel scaling activation statistics; activation-aware weight quantization salient channels (web search, 2026-11-15) | web search | THIN: no patent database searched; only papers returned (AWQ, GPTQ, 2026 calibration preprints), no new lead. H9 stays the nearest read |
 
 ## Leads
 
