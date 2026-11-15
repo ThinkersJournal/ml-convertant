@@ -23,6 +23,9 @@ use mlmf_gguf::{
 };
 use std::fmt;
 
+mod safetensors;
+pub use safetensors::convert_safetensors;
+
 const QUANT_KEY: &str = "general.quantization_version";
 /// ggml's `GGML_QNT_VERSION`.
 const QUANTIZATION_VERSION: u32 = 2;
@@ -187,6 +190,8 @@ pub enum GlueError {
     Gguf(GgufError),
     /// MLMF reported a failure reading a tensor's bytes.
     Mlmf(mlmf_core::Error),
+    /// MLMF could not parse the safetensors container.
+    Safetensors(mlmf_safetensors::SafetensorsError),
     /// MLMF could not write the GGUF.
     Encode(GgufEncodeError),
     /// MLMF could not fully describe the file; converting would drop something silently.
@@ -211,6 +216,7 @@ impl fmt::Display for GlueError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Gguf(e) => write!(f, "reading the GGUF: {e}"),
+            Self::Safetensors(e) => write!(f, "reading the safetensors file: {e}"),
             Self::Mlmf(e) => write!(f, "reading a tensor: {e}"),
             Self::Encode(e) => write!(f, "writing the GGUF: {e:?}"),
             Self::Incomplete(m) => write!(f, "the file cannot be fully carried over: {m}"),
@@ -280,75 +286,84 @@ pub fn convert_gguf(input: &[u8], plan: &Plan<'_>) -> Result<GgufConversion, Glu
         ));
     }
 
-    let target = plan.target;
-    let block = target.block_elems();
     let mut owned: Vec<Owned> = Vec::new();
     let mut outcomes = Vec::new();
     for d in tensors.tensors() {
         let dims = d.shape.dims().to_vec();
         let raw = tensors.tensor_bytes(d).map_err(GlueError::Mlmf)?;
-        let selected = (plan.select)(&d.name, &dims);
-        let dense = match d.encoding {
-            Encoding::Dense(t) => Some(t),
-            _ => None,
-        };
-        if !selected {
-            owned.push(passthrough(&d.name, d.encoding, &dims, &raw)?);
-            outcomes.push(TensorOutcome {
-                name: d.name.clone(),
-                outcome: Outcome::Copied,
-            });
-            continue;
-        }
-        let skip = |reason: String,
-                    owned: &mut Vec<Owned>,
-                    outcomes: &mut Vec<TensorOutcome>|
-         -> Result<(), GlueError> {
-            owned.push(passthrough(&d.name, d.encoding, &dims, &raw)?);
-            outcomes.push(TensorOutcome {
-                name: d.name.clone(),
-                outcome: Outcome::Skipped { reason },
-            });
-            Ok(())
-        };
-        let Some(dtype) = dense.filter(|t| matches!(t, DType::F32 | DType::F16 | DType::BF16))
-        else {
-            skip(
-                "not a dense F32, F16 or BF16 tensor".into(),
-                &mut owned,
-                &mut outcomes,
-            )?;
-            continue;
-        };
-        if dims.first().is_none_or(|&ne0| ne0 % block != 0) {
-            skip(
-                format!(
-                    "first dimension {:?} is not a multiple of the {block}-element block",
-                    dims.first()
-                ),
-                &mut owned,
-                &mut outcomes,
-            )?;
-            continue;
-        }
-        let (x, from) = dense_to_f32(dtype, &raw).expect("dense type checked above");
-        let fail = |message: String| GlueError::Convert {
-            name: d.name.clone(),
-            message,
-        };
-        let bytes = target.encode(&x).map_err(&fail)?;
-        let decoded = target.decode(&bytes).map_err(&fail)?;
-        let bound = target.bound(&x, &bytes).map_err(&fail)?;
-        let report = ErrorReport::measure(&x, &decoded)
-            .map_err(|e| fail(e.to_string()))?
-            .with_bound(bound);
-        owned.push((d.name.clone(), target.ggml_type(), dims.clone(), bytes));
-        outcomes.push(TensorOutcome {
-            name: d.name.clone(),
-            outcome: Outcome::Converted { from, report },
-        });
+        let (o, outcome) = convert_one(plan, &d.name, dims, d.encoding, &raw)?;
+        owned.push(o);
+        outcomes.push(outcome);
     }
+    let entries = meta.entries();
+    write_gguf(&entries, owned, outcomes, meta.get(QUANT_KEY).is_some())
+}
 
+/// One tensor through the plan: converted, copied, or skipped with a reason. `dims` are GGUF's `ne`.
+fn convert_one(
+    plan: &Plan<'_>,
+    name: &str,
+    dims: Vec<usize>,
+    encoding: Encoding,
+    raw: &[u8],
+) -> Result<(Owned, TensorOutcome), GlueError> {
+    let target = plan.target;
+    let block = target.block_elems();
+    let copied = |outcome: Outcome| -> Result<(Owned, TensorOutcome), GlueError> {
+        Ok((
+            passthrough(name, encoding, &dims, raw)?,
+            TensorOutcome {
+                name: name.to_string(),
+                outcome,
+            },
+        ))
+    };
+    if !(plan.select)(name, &dims) {
+        return copied(Outcome::Copied);
+    }
+    let skipped = |reason: String| copied(Outcome::Skipped { reason });
+    let dense = match encoding {
+        Encoding::Dense(t) => Some(t),
+        _ => None,
+    };
+    let Some(dtype) = dense.filter(|t| matches!(t, DType::F32 | DType::F16 | DType::BF16)) else {
+        return skipped("not a dense F32, F16 or BF16 tensor".into());
+    };
+    if dims.first().is_none_or(|&ne0| ne0 % block != 0) {
+        return skipped(format!(
+            "first dimension {:?} is not a multiple of the {block}-element block",
+            dims.first()
+        ));
+    }
+    let (x, from) = dense_to_f32(dtype, raw).expect("dense type checked above");
+    let fail = |message: String| GlueError::Convert {
+        name: name.to_string(),
+        message,
+    };
+    let bytes = target.encode(&x).map_err(&fail)?;
+    let decoded = target.decode(&bytes).map_err(&fail)?;
+    let bound = target.bound(&x, &bytes).map_err(&fail)?;
+    let report = ErrorReport::measure(&x, &decoded)
+        .map_err(|e| fail(e.to_string()))?
+        .with_bound(bound);
+    Ok((
+        (name.to_string(), target.ggml_type(), dims, bytes),
+        TensorOutcome {
+            name: name.to_string(),
+            outcome: Outcome::Converted { from, report },
+        },
+    ))
+}
+
+/// Encodes the new GGUF. `declares_quant_version` says the metadata already holds
+/// `general.quantization_version`.
+fn write_gguf(
+    entries: &[(&str, &MetaValue)],
+    owned: Vec<Owned>,
+    outcomes: Vec<TensorOutcome>,
+    declares_quant_version: bool,
+) -> Result<GgufConversion, GlueError> {
+    let mut entries = entries.to_vec();
     let to_write: Vec<GgufTensorToWrite<'_>> = owned
         .iter()
         .map(|(name, ggml_type, dims, data)| GgufTensorToWrite {
@@ -358,7 +373,6 @@ pub fn convert_gguf(input: &[u8], plan: &Plan<'_>) -> Result<GgufConversion, Glu
             data,
         })
         .collect();
-    let mut entries = meta.entries();
     // GGUF requires `general.quantization_version` once any tensor is quantized, and MLMF supplies no value
     // the file did not declare. Converting is what makes the file quantized, so that value is ours to add:
     // ggml's current quantization version, 2, which llama.cpp's own quantizer writes.
@@ -367,7 +381,7 @@ pub fn convert_gguf(input: &[u8], plan: &Plan<'_>) -> Result<GgufConversion, Glu
     let converted_any = outcomes
         .iter()
         .any(|t| matches!(t.outcome, Outcome::Converted { .. }));
-    if converted_any && meta.get(QUANT_KEY).is_none() {
+    if converted_any && !declares_quant_version {
         entries.push((QUANT_KEY, &quantization_version));
         added_metadata.push(QUANT_KEY.to_string());
     }
