@@ -201,6 +201,33 @@ mod tests {
         }
     }
 
+    #[test]
+    fn strength_into_a_quantized_base_equals_the_adjusted_adapter_and_zero_is_requantization() {
+        let (out, inn, rank) = (3usize, 64usize, 2usize);
+        let ad = adapter(out, inn, rank, 1.0, 21);
+        let mut s = 77;
+        let w: Vec<f32> = (0..out * inn).map(|_| lcg(&mut s)).collect();
+        let base = ml_convertant_ggml::quantize_q8_0(&w).unwrap();
+        let half = merge_lora_into_quantized::<ml_convertant_ggml::Q8_0>(
+            &base,
+            &ad.clone().with_strength(0.5),
+        )
+        .unwrap();
+        let mut by_hand = ad.clone();
+        by_hand.scale = 0.5;
+        let hand = merge_lora_into_quantized::<ml_convertant_ggml::Q8_0>(&base, &by_hand).unwrap();
+        assert_eq!(half.output, hand.output);
+        assert_eq!(half.report.within_bound(), Some(true));
+        // Strength 0 merges nothing: the chain is decode then encode of the base only.
+        let off =
+            merge_lora_into_quantized::<ml_convertant_ggml::Q8_0>(&base, &ad.with_strength(0.0))
+                .unwrap();
+        let again =
+            ml_convertant_ggml::quantize_q8_0(&ml_convertant_ggml::dequantize_q8_0(&base).unwrap())
+                .unwrap();
+        assert_eq!(off.output, again);
+    }
+
     /// Quantizes random weights with `F`, merges a random adapter, and checks the proven bound and that
     /// the output decodes to the right number of finite values.
     fn check<F: QuantFormat>(inn: usize) {

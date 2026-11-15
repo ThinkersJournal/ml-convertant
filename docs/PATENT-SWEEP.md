@@ -53,6 +53,12 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 11. Post-training quantization with calibration (min/max, percentile, entropy-histogram scale and zero point;
     INT8/INT4; dynamic and static) (the code removed from MLMF; ROADMAP "candidates").
 12. Merging a LoRA adapter into a quantized base (dequantize, merge, requantize) (ROADMAP row 11).
+13. Adjusting an adapter's strength after load and before merge: `scale` multiplied by a caller-chosen factor
+    (`LoraAdapter::with_strength`; CireSnave ruling 421 Q2, 2026-11-12). **Read 2026-11-15 against what is already on file, with no new
+    search run** (Google Patents rate-limited this machine in the first record, and no query was tried for this idea): it is one
+    multiplication of the existing scale, and the nearest record is H8 (EP4341862A1), whose independent claim 1 requires "training the domain
+    model" with the low-rank matrices as trainable parameters, a step this does not perform. Not a search result, not legal advice; the idea has no
+    query of its own in "Queries run".
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 

@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [Unreleased]
+
+### Added
+- `ml-convertant-lora`: `LoraAdapter::with_strength` adjusts an adapter's strength after load and before merge (ruling 421 Q2): `scale` times a factor, rounded once; `0.0` leaves the base bit-identical, a negative factor subtracts the adapter. Works for `merge_lora` and `merge_lora_into_quantized`.
+- `docs/PATENT-SWEEP.md`: idea 13 (strength adjustment) read against H8, no new search.
+
 ## [0.1.24]
 
 ### Added

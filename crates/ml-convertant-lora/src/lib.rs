@@ -96,6 +96,21 @@ pub struct LoraAdapter {
 }
 
 impl LoraAdapter {
+    /// Returns the adapter with its strength adjusted: `scale` becomes `scale * strength`, rounded once to f32.
+    ///
+    /// For use after loading an adapter and before merging it (llama.cpp's `--lora-scaled`): `1.0` leaves the adapter
+    /// as it is, `0.0` makes the merge return the base weights bit for bit, a negative value subtracts the adapter.
+    /// `A` and `B` are not touched, so the adjusted adapter can still be adjusted again. The merge and its error
+    /// report are defined for the adjusted `scale` as given: they measure the merge arithmetic, not the single
+    /// rounding of the product (at most `2^-24` relative, applied to `scale` before any weight is touched).
+    /// A non-finite `strength` gives a non-finite `scale`; the merge does not refuse it, and its report counts
+    /// the non-finite outputs (`nonfinite_out`).
+    #[must_use]
+    pub fn with_strength(mut self, strength: f32) -> Self {
+        self.scale *= strength;
+        self
+    }
+
     fn validate(&self) -> Result<(), LoraError> {
         for (what, v) in [
             ("out_features", self.out_features),
@@ -273,6 +288,82 @@ mod tests {
         let c = LoraMerge { adapter: ad }.convert(&w).unwrap();
         assert_eq!(c.output, w);
         assert_eq!(c.report.max_abs, 0.0);
+    }
+
+    #[test]
+    fn strength_one_is_the_identity_and_zero_leaves_the_weights_bit_identical() {
+        let ad = adapter(3, 5, 2, 2.0, 11);
+        let w: Vec<f32> = (0..15).map(|i| i as f32 * 0.21 - 1.5).collect();
+        assert_eq!(ad.clone().with_strength(1.0), ad);
+        assert_eq!(
+            merge_lora(&w, &ad.clone().with_strength(1.0)).unwrap(),
+            merge_lora(&w, &ad).unwrap()
+        );
+        let off = merge_lora(&w, &ad.with_strength(0.0)).unwrap();
+        assert!(off.iter().zip(&w).all(|(a, b)| a.to_bits() == b.to_bits()));
+    }
+
+    #[test]
+    fn strength_multiplies_scale_and_composes() {
+        let ad = adapter(2, 4, 2, 0.25, 3);
+        assert_eq!(ad.clone().with_strength(0.5).scale, 0.125);
+        assert_eq!(ad.clone().with_strength(-2.0).scale, -0.5);
+        // Powers of two are exact, so adjusting twice equals adjusting once by the product.
+        assert_eq!(
+            ad.clone().with_strength(0.5).with_strength(4.0),
+            ad.clone().with_strength(2.0)
+        );
+        // A and B are untouched.
+        let adj = ad.clone().with_strength(3.0);
+        assert_eq!((adj.a, adj.b), (ad.a, ad.b));
+    }
+
+    #[test]
+    fn negative_strength_subtracts_the_adapter() {
+        let ad = adapter(2, 3, 1, 1.0, 9);
+        let w = [0.0f32; 6];
+        let plus = merge_lora(&w, &ad).unwrap();
+        let minus = merge_lora(&w, &ad.with_strength(-1.0)).unwrap();
+        assert!(plus.iter().zip(&minus).all(|(p, m)| *p == -*m));
+        assert!(plus.iter().any(|p| *p != 0.0));
+    }
+
+    #[test]
+    fn adjusted_adapter_keeps_the_proven_bound() {
+        for round in 0..60usize {
+            let ad = adapter(
+                1 + round % 5,
+                1 + round % 19,
+                1 + round % 6,
+                1.0,
+                round as u64 + 40,
+            );
+            let strength = [0.1f32, 0.5, 1.5, -0.75, 4.0][round % 5];
+            let mut s = 500 + round as u64;
+            let w: Vec<f32> = (0..ad.out_features * ad.in_features)
+                .map(|_| lcg(&mut s))
+                .collect();
+            let c = LoraMerge {
+                adapter: ad.with_strength(strength),
+            }
+            .convert(&w)
+            .unwrap();
+            assert_eq!(c.report.within_bound(), Some(true), "round {round}");
+        }
+    }
+
+    #[test]
+    fn a_nonfinite_strength_is_counted_not_hidden() {
+        let ad = adapter(2, 2, 1, 1.0, 5).with_strength(f32::INFINITY);
+        let c = LoraMerge { adapter: ad }.convert(&[0.0; 4]).unwrap();
+        assert!(c.report.nonfinite_out > 0);
+        // The control: the same adapter at a finite strength produces no non-finite output.
+        let ok = LoraMerge {
+            adapter: adapter(2, 2, 1, 1.0, 5).with_strength(2.0),
+        }
+        .convert(&[0.0; 4])
+        .unwrap();
+        assert_eq!(ok.report.nonfinite_out, 0);
     }
 
     #[test]

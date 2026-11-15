@@ -31,7 +31,7 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 | `ml-convertant-awq` | AWQ unpack/pack/repack, lossless, identical to Fuel's repack (0.1.6) |
 | `ml-convertant-kquants` | Q2_K to Q6_K, bit-exact vs ggml (0.1.13) |
 | `ml-convertant-mlmf` | GGUF in, GGUF out: convert selected tensors with measured error (0.1.17) |
-| `ml-convertant-lora` | Offline LoRA merge with a proven error bound (0.1.9) |
+| `ml-convertant-lora` | Offline LoRA merge with a proven error bound, into f32 or a quantized base, with adjustable strength (0.1.9) |
 | `ml-convertant-names` | LoRA adapter tensor names, PEFT <-> GGUF, both directions; unmeasured names refused (unreleased) |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
