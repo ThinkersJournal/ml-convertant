@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.29]
+
+### Added
+- `ml-convertant-gptq` (new): AutoGPTQ v1 4-bit layers (`qweight`, `qzeros` stored minus one, `scales`, optional `g_idx`): `unpack_hf`, `pack_hf`, `dequantize_logical`, `to_awq_logical` and the `GptqToAwq` conversion, lossless with a zero-error report. Activation-order layers dequantize but are refused by the AWQ conversion. Re-exported by the facade as `gptq`. The Marlin repack stays in baracuda.
+- `THIRD-PARTY-NOTICES.md`: AutoGPTQ (MIT) layout entry. `docs/PATENT-SWEEP.md`: idea 16, read on file, no new search.
+
 ## [0.1.28]
 
 ### Added

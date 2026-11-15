@@ -48,6 +48,15 @@
   `ml-convertant-awq` is our own implementation; no AutoAWQ source is copied. Its tests re-derive
   the unpacking with AutoAWQ's reverse-order formulation as an independent check.
 
+## AutoGPTQ (MIT)
+
+- Origin: https://github.com/AutoGPTQ/AutoGPTQ, commit `9f7d37072917` (main as read 2026-11-15; the project is
+  unmaintained). Licence: MIT, Copyright (c) 2023 William.
+- What we use: the documented 4-bit layout in `auto_gptq/nn_modules/qlinear/qlinear_cuda_old.py` (buffer shapes in
+  `__init__`, the `pack` method's packing order, `zeros -= 1` on pack and `zeros + 1` masked on read).
+  `ml-convertant-gptq` is our own implementation; no AutoGPTQ source is copied. Its tests re-implement `pack`
+  independently as the check.
+
 ## Fuel awq_repack output (own code, MIT OR Apache-2.0)
 
 - `crates/ml-convertant-awq/tests/golden/fuel_repack.bin` records the output of Fuel's

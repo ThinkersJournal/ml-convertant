@@ -24,8 +24,8 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-11-14.
 | 12 | `ml-convertant-names`: PEFT <-> GGUF adapter tensor names (ruling 421 Q1, merged #26) | done |
 | 13 | Adapter strength: `LoraAdapter::with_strength` (ruling 421 Q2, merged #27) | done |
 | 14 | safetensors glue: `convert_safetensors` (safetensors in, GGUF out; PM [TASK] 2026-11-15, merged #29) | done |
-| 15 | NF4/AWQ bases for merge-into-quantized (`merge_lora_into_nf4`, `merge_lora_into_awq`) | in review |
-| 16 | GPTQ repack | next (PM order) |
+| 15 | NF4/AWQ bases for merge-into-quantized (`merge_lora_into_nf4`, `merge_lora_into_awq`) | done |
+| 16 | GPTQ: `ml-convertant-gptq` (unpack/pack/dequantize, GPTQ to AWQ layout; Marlin stays in baracuda) | in review |
 
 **First release done:** 0.1.24 published and tagged v0.1.24 by the PM (board 307 ruled C, 2026-11-01). Both 421 rulings are implemented.
 
