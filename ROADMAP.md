@@ -23,6 +23,9 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-11-14.
 | 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | done |
 | 12 | `ml-convertant-names`: PEFT <-> GGUF adapter tensor names (ruling 421 Q1, merged #26) | done |
 | 13 | Adapter strength: `LoraAdapter::with_strength` (ruling 421 Q2, merged #27) | done |
+| 14 | safetensors glue: `convert_safetensors` (safetensors in, GGUF out; PM [TASK] 2026-11-15) | in review |
+| 15 | NF4/AWQ bases for merge-into-quantized | next (PM order) |
+| 16 | GPTQ repack | after 15 |
 
 **First release done:** 0.1.24 published and tagged v0.1.24 by the PM (board 307 ruled C, 2026-11-01). Both 421 rulings are implemented.
 

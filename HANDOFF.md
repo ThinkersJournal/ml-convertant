@@ -8,8 +8,10 @@ a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF in/out, mlmf ~0.11
 Llama-style layout, others refused; ruling 421 Q1), CI differential vs llama.cpp, `docs/PATENT-SWEEP.md` (per-crate H1/H2 read; board 307 ruled C
 2026-11-01, no integer dot kernel here; the K-quants do H2's per-vector steps, so the "no" rests on the missing multiply limitation alone).
 
-**In flight:** this docs PR (`roadmap-current`, worktree `ml-convertant-wt-roadmap`, 0.1.26 proposed; PM may re-allocate). Both 421 rulings are
-done (names #26, strength #27 at 0.1.25, merged). No ROADMAP row is unblocked; the ideas below need a PM/CireSnave go.
+**In flight (PM [TASK] go-converter-rows 2026-11-15, one PR each, in this order):** 1 safetensors glue (`convert_safetensors`, safetensors in, GGUF out,
+PM agreed the direction): branch `safetensors-glue`, worktree `ml-convertant-wt-safetensors`, version 0.1.27 proposed; 2 NF4/AWQ bases in the
+LoRA-into-quantized merge; 3 GPTQ repack; then calibration (re-sweep patents first) and IQ*. Converters only: no integer dot-product kernel
+(board 307 C). The lightbulb lane is to join Synapse (what Qwen3.8 needs first).
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
