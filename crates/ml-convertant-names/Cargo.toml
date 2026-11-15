@@ -1,0 +1,12 @@
+[package]
+name = "ml-convertant-names"
+description = "Rename LoRA adapter tensors between the PEFT (safetensors) and llama.cpp GGUF forms, refusing names it has no measured mapping for."
+readme = "README.md"
+keywords = ["machine-learning", "lora", "peft", "gguf", "conversion"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true

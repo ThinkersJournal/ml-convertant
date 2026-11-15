@@ -88,5 +88,17 @@ Dependency of `ml-convertant-ggml` and `ml-convertant-awq` (and dev-dependency o
 `ml-convertant-mlmf` depends on `mlmf-core`, `mlmf-ggml` and `mlmf-gguf` (tilde-pinned, crates.io) to read and write GGUF.
 Dev-dependencies of `ml-convertant-nf4` tests (`mlmf-bnb`, `mlmf-core`, `mlmf-safetensors`, tilde-pinned, crates.io) to read the fixture.
 
+## llama.cpp adapter tensor naming (MIT), `ml-convertant-names`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`gguf-py/gguf/tensor_mapping.py`, `convert_lora_to_gguf.py`). Licence: MIT, Copyright (c) 2023-2026 The ggml
+  authors; text in `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the facts that a Llama-style Hugging Face module maps to a GGUF stem (`self_attn.q_proj` is `attn_q`, ... `lm_head` is
+  `output`, `model.embed_tokens` is `token_embd`), that an adapter factor is named `<base>.weight.lora_a` / `.lora_b`, that
+  `.base_layer.weight` is skipped, and that `token_embd`'s `lora_a` is transposed. `crates/ml-convertant-names/src/lib.rs` is our own
+  table of seven module names and two globals; no llama.cpp source is copied.
+- Checked against: real adapter tensor names recorded in MLMF's `lora-measurements.tsv` (a llama GGUF adapter; PEFT Llama, Gemma 2,
+  Qwen-style adapters); see the crate docs for what is refused.
+
 Each future entry must give origin (URL + commit), licence, what we copied or derived, and which
 files use it. See `docs/DESIGN.md` §5.

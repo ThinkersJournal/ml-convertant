@@ -2,17 +2,17 @@
 
 State 2026-11-12. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.22 at 6c827a2; #25 makes it 0.1.23):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double
+**On main (0.1.23 at 7803d27):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double
 quantization), awq (unpack/pack/repack), lora (merge; merge into a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF
-in/out), CI differential vs llama.cpp (ubuntu+windows, Q8_0..Q6_K), `docs/PATENT-SWEEP.md`. Branch protection: 5 required checks.
+in/out, mlmf ~0.11.29), CI differential vs llama.cpp (ubuntu+windows, Q8_0..Q6_K), `docs/PATENT-SWEEP.md` (per-crate H1/H2 read).
+Branch protection: 5 required checks.
 
-**FIRST RELEASE (PM [TASK] 2026-11-12; board 307 ruled 2026-11-01 option C; CireSnave asked the PM to publish):** the PM publishes
-and allocates the version (0.1.23). Steps: (1) per-crate H1/H2 re-read in PATENT-SWEEP, (2) mlmf pins to ~0.11.29, (3) this
-HANDOFF, all in #25 (branch `release-prep`, worktree `ml-convertant-wt-release`); (4) new MLMF-free `crates/ml-convertant-names`
-(PEFT<->GGUF tensor names, ruling 421: Llama-style layout, both directions, others refused), branch `names-crate`, worktree
-`ml-convertant-wt-names`, own PR after #25 merges (rebase onto it: both touch CHANGELOG, and the names crate needs 0.1.23);
-(5) release prep per crate in dependency order: the PM publishes. Next row after names: adapter strength/scale adjustment after
-load, before use (ruling 421 Q2; MLMF only loads and saves).
+**FIRST RELEASE (PM [TASK]s 2026-11-12/13; board 307 ruled C 2026-11-01; CireSnave asked the PM to publish):** the PM publishes and
+allocates versions. Done: steps 1-3 (#25, merged). Open: step 4, PR #26 (`names-crate`, worktree `ml-convertant-wt-names`): MLMF-free
+`ml-convertant-names` (ruling 421: Llama-style layout, both directions, others refused), versions set to 0.1.24 (proposed, the PM may
+re-allocate), plus the verbatim 307 quote. Step 5: the PM publishes in order core, ggml, kquants, nf4, awq, lora, mlmf, names, facade.
+Next row after #26: adapter strength/scale adjustment after load, before use (ruling 421 Q2; MLMF only loads and saves; sweep the
+patents first: it touches merge arithmetic, H8).
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
@@ -22,7 +22,7 @@ differential for other formats.
 (harnesses `tools/golden/*_reference.c`, -DNDEBUG for the K-quants, MSVC locally, gcc in CI). NF4 encoder reproduces a real
 bitsandbytes checkpoint byte for byte. AWQ repack is identical to Fuel's, NOT checked against a real AWQ checkpoint. LoRA
 merge is NOT compared with PEFT-merged weights. The glue adds `general.quantization_version` = 2 only when it converted
-something and the input lacked it. Version 0.1.23 (PM-allocated) set on every crate and path-dep minimum in #25.
+something and the input lacked it. One version for every crate and path-dep minimum.
 
 **Patent sweep:** first record done; re-read triggers are in `docs/PATENT-SWEEP.md`. Google Patents throttles after a few
 queries (use C:\Projects\tools\patent-claims.py); USPTO image PDFs via WebFetch downloadPdf + PyMuPDF work for US documents.
