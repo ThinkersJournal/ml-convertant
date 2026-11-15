@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.30]
+
+### Changed
+- `docs/PATENT-SWEEP.md`: calibration re-sweep recorded as thin (two web queries W6 and W7, no patent database searched, no new row; H9 is the nearest read).
+
 ## [0.1.29]
 
 ### Added
