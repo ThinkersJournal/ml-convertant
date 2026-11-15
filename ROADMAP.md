@@ -1,6 +1,6 @@
 # Roadmap
 
-Order follows `docs/DESIGN.md` §4. Status as of 2026-10-26.
+Order follows `docs/DESIGN.md` §4. Status as of 2026-11-14.
 
 | # | Row | Status |
 |---|-----|--------|
@@ -21,7 +21,9 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-10-26.
 | 10c | K-quants: Q6_K (bit-exact vs ggml) | done |
 | 10d | K-quants: Q2_K and Q3_K (bit-exact vs ggml) | done |
 | 11 | LoRA merge into a quantized base (dequantize, merge, requantize; error of the whole chain vs an f64 reference) | done |
+| 12 | `ml-convertant-names`: PEFT <-> GGUF adapter tensor names (ruling 421 Q1, merged #26) | done |
+| 13 | Adapter strength: `LoraAdapter::with_strength` (ruling 421 Q2, merged #27) | done |
 
-**First release held** on board item 307 (CireSnave's ruling on PATENT-SWEEP H1/H2, Nvidia US12045307B2 / US12412082B2); release prep is done (#23).
+**First release done:** 0.1.24 published and tagged v0.1.24 by the PM (board 307 ruled C, 2026-11-01). Both 421 rulings are implemented.
 
-Candidates, unscheduled: K-quants, GPTQ repack, calibration (re-home the code removed from mlmf).
+Candidates, unscheduled (no row until the PM or CireSnave says go): safetensors glue, NF4/AWQ bases for merge-into-quantized, GPTQ repack, calibration (re-sweep patents first, H9), IQ* K-quant formats, differential for other formats.
