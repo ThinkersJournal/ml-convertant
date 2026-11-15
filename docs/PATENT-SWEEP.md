@@ -59,6 +59,10 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     multiplication of the existing scale, and the nearest record is H8 (EP4341862A1), whose independent claim 1 requires "training the domain
     model" with the low-rank matrices as trainable parameters, a step this does not perform. Not a search result, not legal advice; the idea has no
     query of its own in "Queries run".
+14. Reading a safetensors file as the source of a GGUF conversion (`convert_safetensors`): file reading, a reversal of
+    dimension order and the existing per-tensor quantizers. **Read 2026-11-15 against what is already on file, with no new search run**: it
+    adds no arithmetic beyond the existing converters (H1/H2 per-crate read above still applies unchanged: no multiplier or dot product on
+    quantized vectors). Not a search result, not legal advice.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 

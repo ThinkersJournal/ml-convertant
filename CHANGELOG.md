@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.27]
+
+### Added
+- `ml-convertant-mlmf`: `convert_safetensors` reads a safetensors file (dense F32/F16/BF16 tensors) and writes a GGUF with the selected tensors quantized, same `Plan`, per-tensor `ErrorReport` and outcomes as `convert_gguf`. Dimensions are reversed to GGUF `ne`, a scalar becomes a one-element vector, the caller supplies the GGUF metadata (`general.architecture` is required by MLMF's encoder), safetensors names are carried over unchanged. New `GlueError::Safetensors`. The GGUF path is refactored onto the same per-tensor helper with its tests unchanged.
+- `docs/PATENT-SWEEP.md`: idea 14 (safetensors as a source), read on file, no new search.
+
 ## [0.1.26]
 
 ### Changed
