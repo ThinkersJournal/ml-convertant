@@ -2,17 +2,14 @@
 
 State 2026-11-12. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.23 at 7803d27):** core (`ErrorReport`, `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double
-quantization), awq (unpack/pack/repack), lora (merge; merge into a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF
-in/out, mlmf ~0.11.29), CI differential vs llama.cpp (ubuntu+windows, Q8_0..Q6_K), `docs/PATENT-SWEEP.md` (per-crate H1/H2 read).
-Branch protection: 5 required checks.
+**On main (0.1.24 at 724d0bf, published to crates.io and tagged v0.1.24 by the PM 2026-11-15, all 9 crates):** core (`ErrorReport`,
+`Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double quantization), awq (unpack/pack/repack), lora (merge; merge into
+a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF in/out, mlmf ~0.11.29), names (LoRA adapter tensor names PEFT<->GGUF,
+Llama-style layout, others refused; ruling 421 Q1), CI differential vs llama.cpp, `docs/PATENT-SWEEP.md` (per-crate H1/H2 read; board 307 ruled C
+2026-11-01, no integer dot kernel here; the K-quants do H2's per-vector steps, so the "no" rests on the missing multiply limitation alone).
 
-**FIRST RELEASE (PM [TASK]s 2026-11-12/13; board 307 ruled C 2026-11-01; CireSnave asked the PM to publish):** the PM publishes and
-allocates versions. Done: steps 1-3 (#25, merged). Open: step 4, PR #26 (`names-crate`, worktree `ml-convertant-wt-names`): MLMF-free
-`ml-convertant-names` (ruling 421: Llama-style layout, both directions, others refused), versions set to 0.1.24 (proposed, the PM may
-re-allocate), plus the verbatim 307 quote. Step 5: the PM publishes in order core, ggml, kquants, nf4, awq, lora, mlmf, names, facade.
-Next row after #26: adapter strength/scale adjustment after load, before use (ruling 421 Q2; MLMF only loads and saves; sweep the
-patents first: it touches merge arithmetic, H8).
+**In flight:** strength/scale adjustment (ruling 421 Q2): `LoraAdapter::with_strength`, branch `adapter-strength`, worktree
+`ml-convertant-wt-strength`, PR #27, version 0.1.25 (PM-allocated). Nothing else is open.
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
