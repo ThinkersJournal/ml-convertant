@@ -9,7 +9,7 @@ Llama-style layout, others refused; ruling 421 Q1), CI differential vs llama.cpp
 2026-11-01, no integer dot kernel here; the K-quants do H2's per-vector steps, so the "no" rests on the missing multiply limitation alone).
 
 **In flight:** strength/scale adjustment (ruling 421 Q2): `LoraAdapter::with_strength`, branch `adapter-strength`, worktree
-`ml-convertant-wt-strength`, PR opened with [READY]; the PM allocates the version on [READY]. Nothing else is open.
+`ml-convertant-wt-strength`, PR #27, version 0.1.25 (PM-allocated). Nothing else is open.
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
