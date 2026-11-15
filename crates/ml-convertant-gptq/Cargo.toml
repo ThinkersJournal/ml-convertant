@@ -1,0 +1,17 @@
+[package]
+name = "ml-convertant-gptq"
+description = "GPTQ (4-bit, AutoGPTQ v1 layout) unpack, pack, dequantize and conversion to the AWQ layout, lossless with measured error."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "gptq", "int4", "repack"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.29" }
+ml-convertant-awq = { path = "../ml-convertant-awq", version = "0.1.29" }
+half = "2"

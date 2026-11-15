@@ -6,6 +6,7 @@ pub use ml_convertant_awq as awq;
 pub use ml_convertant_core as core;
 pub use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch, ReferenceId};
 pub use ml_convertant_ggml as ggml;
+pub use ml_convertant_gptq as gptq;
 pub use ml_convertant_kquants as kquants;
 pub use ml_convertant_lora as lora;
 pub use ml_convertant_mlmf as mlmf;

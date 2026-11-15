@@ -69,6 +69,11 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     training, which this does not do. The AWQ requantizer is group-wise asymmetric min/max round-to-nearest with an f16 scale: the nearest
     records on file for group-wise asymmetric quantization are those listed under query Q13 (CN111937010B, read as H22, compute-side). No
     activation-aware scale search, no calibration. Not a search result, not legal advice.
+16. Unpacking and repacking GPTQ layers (`ml-convertant-gptq`): bit unpacking, a zero-point offset, and a relabelling into the AWQ layout.
+    **Read 2026-11-15 against what is already on file, with no new search run.** No arithmetic beyond an f16 multiply on dequantize (the
+    same one the AWQ crate does); no quantization step, no calibration, no training, and no multiplier or dot product on quantized vectors,
+    so H1/H2 are as read in the per-crate section and H8 needs training. The GPTQ algorithm itself (the Hessian-based quantizer) is not
+    implemented. Not a search result, not legal advice.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 
