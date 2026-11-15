@@ -1,15 +1,15 @@
 # HANDOFF (lane ml-convertant)
 
-State 2026-11-12. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
+State 2026-11-14. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.24 at 724d0bf, published to crates.io and tagged v0.1.24 by the PM 2026-11-15, all 9 crates):** core (`ErrorReport`,
+**On main (0.1.25 at 096f1d9; 0.1.24 published to crates.io and tagged v0.1.24 by the PM 2026-11-15, all 9 crates):** core (`ErrorReport`,
 `Conversion`), ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4 (+ double quantization), awq (unpack/pack/repack), lora (merge; merge into
 a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF in/out, mlmf ~0.11.29), names (LoRA adapter tensor names PEFT<->GGUF,
 Llama-style layout, others refused; ruling 421 Q1), CI differential vs llama.cpp, `docs/PATENT-SWEEP.md` (per-crate H1/H2 read; board 307 ruled C
 2026-11-01, no integer dot kernel here; the K-quants do H2's per-vector steps, so the "no" rests on the missing multiply limitation alone).
 
-**In flight:** strength/scale adjustment (ruling 421 Q2): `LoraAdapter::with_strength`, branch `adapter-strength`, worktree
-`ml-convertant-wt-strength`, PR #27, version 0.1.25 (PM-allocated). Nothing else is open.
+**In flight:** this docs PR (`roadmap-current`, worktree `ml-convertant-wt-roadmap`, 0.1.26 proposed; PM may re-allocate). Both 421 rulings are
+done (names #26, strength #27 at 0.1.25, merged). No ROADMAP row is unblocked; the ideas below need a PM/CireSnave go.
 
 **Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
 LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
