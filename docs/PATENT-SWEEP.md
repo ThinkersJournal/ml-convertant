@@ -63,6 +63,12 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     dimension order and the existing per-tensor quantizers. **Read 2026-11-15 against what is already on file, with no new search run**: it
     adds no arithmetic beyond the existing converters (H1/H2 per-crate read above still applies unchanged: no multiplier or dot product on
     quantized vectors). Not a search result, not legal advice.
+15. Merging a LoRA adapter into an NF4 or an AWQ base (dequantize, merge in f32, requantize; `merge_lora_into_nf4`, `merge_lora_into_awq`).
+    **Read 2026-11-15 against what is already on file, with no new search run.** The merge arithmetic is the existing f32 one on dequantized
+    values, so H1/H2 (multipliers or dot products on quantized vectors) are as read in the per-crate section; H8 (EP4341862A1) needs
+    training, which this does not do. The AWQ requantizer is group-wise asymmetric min/max round-to-nearest with an f16 scale: the nearest
+    records on file for group-wise asymmetric quantization are those listed under query Q13 (CN111937010B, read as H22, compute-side). No
+    activation-aware scale search, no calibration. Not a search result, not legal advice.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 

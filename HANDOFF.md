@@ -8,14 +8,12 @@ a quantized base for Q8_0, Q4_0, Q2_K..Q6_K), mlmf glue (GGUF in/out, mlmf ~0.11
 Llama-style layout, others refused; ruling 421 Q1), CI differential vs llama.cpp, `docs/PATENT-SWEEP.md` (per-crate H1/H2 read; board 307 ruled C
 2026-11-01, no integer dot kernel here; the K-quants do H2's per-vector steps, so the "no" rests on the missing multiply limitation alone).
 
-**In flight (PM [TASK] go-converter-rows 2026-11-15, one PR each, in this order):** 1 safetensors glue (`convert_safetensors`, safetensors in, GGUF out,
-PM agreed the direction): branch `safetensors-glue`, worktree `ml-convertant-wt-safetensors`, version 0.1.27 proposed; 2 NF4/AWQ bases in the
-LoRA-into-quantized merge; 3 GPTQ repack; then calibration (re-sweep patents first) and IQ*. Converters only: no integer dot-product kernel
-(board 307 C). The lightbulb lane is to join Synapse (what Qwen3.8 needs first).
+**In flight (PM [TASK] go-converter-rows 2026-11-15, one PR each, in order):** done: safetensors glue (#29, 0.1.27). Now: NF4/AWQ bases in the
+LoRA-into-quantized merge, branch `lora-nf4-awq-bases`, worktree `ml-convertant-wt-nf4awq`, version 0.1.28 proposed (AWQ requantizer is min/max RTN, not
+AWQ calibration; say so). Next: GPTQ repack; then calibration (re-sweep patents first) and IQ*. Converters only: no integer dot-product kernel (board 307 C).
 
-**Unscheduled ideas (no row; start one only with a PM/CireSnave go):** safetensors glue, NF4/AWQ bases in the
-LoRA-into-quantized merge, GPTQ repack, calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
-differential for other formats.
+**Unscheduled ideas (no row; start one only with a PM/CireSnave go):** calibration (re-sweep patents first: US12099930B2 H9), IQ* K-quant formats,
+differential for other formats, safetensors out (only if a consumer asks).
 
 **Facts worth keeping:** Q8_0..Q6_K are byte-identical to ggml's own code compiled from llama.cpp `9d57ce456c`
 (harnesses `tools/golden/*_reference.c`, -DNDEBUG for the K-quants, MSVC locally, gcc in CI). NF4 encoder reproduces a real

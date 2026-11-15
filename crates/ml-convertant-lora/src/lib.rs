@@ -32,7 +32,11 @@
 
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
 
+mod awq_base;
+mod nf4_base;
 mod quantized;
+pub use awq_base::{AwqRequantError, merge_lora_into_awq};
+pub use nf4_base::merge_lora_into_nf4;
 pub use quantized::{QuantFormat, RequantError, merge_lora_into_quantized};
 use std::fmt;
 
