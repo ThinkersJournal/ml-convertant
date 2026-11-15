@@ -11,4 +11,4 @@ Apache-2.0); no PEFT source is copied. **Verified** against hand-computed cases 
 Part of [ml-convertant](https://github.com/ThinkersJournal/ml-convertant).
 
 `merge_lora_into_quantized` merges into a base that is already quantized (Q8_0, Q4_0, Q2_K to Q6_K): dequantize, merge,
-requantize, with the chain's error and a proven bound reported. NF4 and AWQ bases are not covered yet.
+requantize, with the chain's error and a proven bound reported. `merge_lora_into_nf4` does the same for an NF4 base (same block size, f32 absmax out) and `merge_lora_into_awq` for an AWQ layer in the logical layout (unpack/pack with `ml-convertant-awq`): the merged weights are requantized per group by min/max round-to-nearest with an f16 scale, **not** by AWQ's activation-aware search.

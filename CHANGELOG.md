@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.28]
+
+### Added
+- `ml-convertant-lora`: `merge_lora_into_nf4` (NF4 base, same block size, f32 absmax out) and `merge_lora_into_awq` (AWQ layer in the logical layout; group-wise min/max round-to-nearest requantizer with f16 scale rounded up, not AWQ's activation-aware search). Each reports the chain's error against the exact f64 merge of the dequantized base with a proven bound. New `AwqRequantError`; the crate now depends on `ml-convertant-nf4`, `ml-convertant-awq` and `half`.
+- `docs/PATENT-SWEEP.md`: idea 15, read on file, no new search.
+
 ## [0.1.27]
 
 ### Added
