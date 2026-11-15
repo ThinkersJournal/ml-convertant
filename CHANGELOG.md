@@ -4,6 +4,14 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.24]
+
+### Added
+- `ml-convertant-names`: rename LoRA adapter tensors between the PEFT and GGUF forms, both directions, for the Llama-style layout (CireSnave ruling 421, 2026-11-12); unmeasured names refused with a typed error; reports when an embedding's data must be transposed.
+
+### Changed
+- `docs/PATENT-SWEEP.md`: quotes the board 307 ruling (option C, 2026-11-01) verbatim from the board archive.
+
 ## [0.1.23]
 
 ### Changed
