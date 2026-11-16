@@ -2,17 +2,18 @@
 
 State 2026-11-16. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.36 after #38; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0, IQ4_NL), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
+**On main (0.1.37 after #39; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0, IQ4_NL, IQ4_XS), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
 layout), calibrate (RTN and search_awq), lora (merge into f32 / ggml / NF4 / AWQ bases), mlmf glue (GGUF or safetensors in, GGUF out), names; CI differential vs llama.cpp;
 `docs/PATENT-SWEEP.md`, `docs/IQ-DESIGN.md`, `docs/IQ-PATENT-SEARCH-2026-11-16.md` (board 307 ruled C: no integer dot kernel here). Rows 1 to 17 done.
 
-**In flight, row 18 (IQ* formats, converters only):** IQ4_XS PR on branch `iq4-xs`, worktree `ml-convertant-wt-iq4xs`, 0.1.37 proposed (PM allocates); byte-identical to ggml `quantize_iq4_xs`,
-16 mutations caught. Next: IQ3_S (vendor `iq3s_grid` with ggml's licence text and commit pin in THIRD-PARTY-NOTICES, verify our copy byte for byte against the origin).
+**In flight, row 18 (IQ* formats, converters only):** IQ3_S PR on branch `iq3-s`, worktree `ml-convertant-wt-iq3s`, 0.1.38 proposed (PM allocates); byte-identical to ggml `quantize_iq3_s` except blocks with an exactly-zero
+sub-block followed by a non-zero one (ggml bug, we place sub-blocks correctly; PM told). `iq3s_grid` vendored via `tools/golden/gen_iq3s_grid.py`, CI diffs it. After it merges, row 18 is done
+unless the PM adds IQ2_*/IQ3_XXS (not scheduled).
 Fuel's targets: Iq4Nl/Iq4Xs/Iq3S in GGUF on-disk layout.
 **RELEASE GATE: no published version ships IQ* until the CPC/assignee patent database search is done (routed by the PM, not reported finished) or CireSnave decides.**
 US12524655B2 (STMicro, lattice VQ) read clear for fixed grids; CONDITION: never build an activation-approximating optimizer with a lattice-distance regularizer.
 
-**Facts worth keeping:** Q8_0..Q6_K, IQ4_NL, IQ4_XS byte-identical to ggml's own code (llama.cpp `9d57ce456c`). NF4 reproduces a real bitsandbytes checkpoint.
+**Facts worth keeping:** Q8_0..Q6_K, IQ4_NL, IQ4_XS, IQ3_S (see above) byte-identical to ggml's own code (llama.cpp `9d57ce456c`). NF4 reproduces a real bitsandbytes checkpoint.
 AWQ pack order checked against dense Qwen3-0.6B (not AutoAWQ code); GPTQ against one AutoRound-exported checkpoint (act-order unchecked); search_awq not checked against AutoAWQ or real activations. LoRA merge NOT compared
 with PEFT-merged weights. IQ* not compared with Fuel's `to_float` or a real IQ file. One version for every crate and path-dep minimum.
 

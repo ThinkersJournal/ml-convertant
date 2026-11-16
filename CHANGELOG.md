@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.38]
+
+### Added
+- `ml-convertant-ggml`: IQ3_S (`quantize_iq3_s`, `quantize_iq3_s_weighted`, `dequantize_iq3_s`, `Iq3S`, `IQ3_S_BLOCK_BYTES`, `QK_IQ3_S`): ggml's `quantize_iq3_s` (256-element blocks of 110 bytes, a fixed grid of 512 four-element points, 4-bit sub-block scales, optional importance vector) reproduced in f32, byte-identical to llama.cpp `9d57ce456c` on the committed vectors (with and without an importance vector) and on random data; the CI differential gains `iq3_s`. The grid `iq3s_grid` is vendored with ggml's MIT licence and commit pin (`THIRD-PARTY-NOTICES.md`) and generated from the pinned checkout by `tools/golden/gen_iq3s_grid.py`, which also checks it against ggml's `kgrid_512`; CI regenerates it and diffs. The report is measured error only (no proven bound). `convert_file` gains `iq3_s`.
+- **Deliberate difference from ggml:** for a block whose 32-element sub-block is exactly zero while a later one is not, ggml `9d57ce456c` mis-places the later sub-blocks' grid indices and signs (its `continue` skips the output-pointer advance), so its own decode of that block is wrong; we write each sub-block where the decoder reads it. Bytes differ from ggml's only on such blocks (`golden_iq3_s.rs`, `iq3_s.rs` docs). No published version ships IQ* until the CPC/assignee patent database search is done or CireSnave decides (`docs/PATENT-SWEEP.md`).
+
 ## [0.1.37]
 
 ### Added

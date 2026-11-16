@@ -115,7 +115,10 @@ fn encode_block(xb: &[f32; QK_IQ4_XS], qw: Option<&[f32]>) -> Result<Encoded, ()
 }
 
 /// Checks `importance`: non-empty, a multiple of 256, dividing the input into whole rows, finite and non-negative.
-fn check_importance(x: &[f32], importance: Option<&[f32]>) -> Result<Option<usize>, Iq4Error> {
+pub(crate) fn check_importance(
+    x: &[f32],
+    importance: Option<&[f32]>,
+) -> Result<Option<usize>, Iq4Error> {
     let Some(w) = importance else { return Ok(None) };
     if w.is_empty()
         || !w.len().is_multiple_of(QK_IQ4_XS)

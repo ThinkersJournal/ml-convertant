@@ -1,10 +1,11 @@
-//! `convert_file <q8_0|q4_0|iq4_nl|iq4_xs> <in.f32> <out.bin> <out.deq.f32> [importance.f32]`: encodes a raw little-endian f32 file
+//! `convert_file <q8_0|q4_0|iq4_nl|iq4_xs|iq3_s> <in.f32> <out.bin> <out.deq.f32> [importance.f32]`: encodes a raw little-endian f32 file
 //! and writes the blocks and their decoding, in the same file formats as `tools/golden/*_reference.c`,
 //! so the CI differential can compare the two byte for byte.
 
 use ml_convertant_ggml::{
-    dequantize_iq4_nl, dequantize_iq4_xs, dequantize_q4_0, dequantize_q8_0,
-    quantize_iq4_nl_weighted, quantize_iq4_xs_weighted, quantize_q4_0, quantize_q8_0,
+    dequantize_iq3_s, dequantize_iq4_nl, dequantize_iq4_xs, dequantize_q4_0, dequantize_q8_0,
+    quantize_iq3_s_weighted, quantize_iq4_nl_weighted, quantize_iq4_xs_weighted, quantize_q4_0,
+    quantize_q8_0,
 };
 use std::{env, error::Error, fs};
 
@@ -15,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         [_, f, i, b, d, w] => (f, i, b, d, Some(w)),
         _ => {
             return Err(
-                "usage: convert_file <q8_0|q4_0|iq4_nl|iq4_xs> <in.f32> <out.bin> <out.deq.f32> [importance.f32]"
+                "usage: convert_file <q8_0|q4_0|iq4_nl|iq4_xs|iq3_s> <in.f32> <out.bin> <out.deq.f32> [importance.f32]"
                     .into(),
             );
         }
@@ -49,6 +50,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         "iq4_xs" => {
             let b = quantize_iq4_xs_weighted(&x, importance.as_deref())?;
             let d = dequantize_iq4_xs(&b)?;
+            (b, d)
+        }
+        "iq3_s" => {
+            let b = quantize_iq3_s_weighted(&x, importance.as_deref())?;
+            let d = dequantize_iq3_s(&b)?;
             (b, d)
         }
         other => return Err(format!("unknown format {other}").into()),
