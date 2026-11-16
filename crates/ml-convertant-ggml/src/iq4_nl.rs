@@ -46,7 +46,7 @@ pub const KVALUES_IQ4NL: [i8; 16] = [
 ];
 
 /// ggml's `GROUP_MAX_EPS`: a block whose largest magnitude is below this is stored as zeros.
-const GROUP_MAX_EPS: f32 = 1e-15;
+pub(crate) const GROUP_MAX_EPS: f32 = 1e-15;
 /// ggml's `ntry` for `quantize_iq4_nl`.
 const NTRY: i32 = 7;
 
@@ -97,7 +97,7 @@ impl fmt::Display for Iq4Error {
 impl std::error::Error for Iq4Error {}
 
 /// ggml's `best_index_int8` for the sixteen-entry table.
-fn best_index(x: f32) -> usize {
+pub(crate) fn best_index(x: f32) -> usize {
     let val = &KVALUES_IQ4NL;
     if x <= f32::from(val[0]) {
         return 0;
@@ -160,7 +160,12 @@ fn encode_block(xb: &[f32; QK4_NL], qw: Option<&[f32]>, l: &mut [u8; QK4_NL]) ->
 }
 
 /// ggml's scale search for a block that is not all zero: the least-squares scale of the best of the candidates.
-fn scale_search(xb: &[f32; QK4_NL], weight: &[f32; QK4_NL], max: f32, l: &mut [u8; QK4_NL]) -> f32 {
+pub(crate) fn scale_search(
+    xb: &[f32; QK4_NL],
+    weight: &[f32; QK4_NL],
+    max: f32,
+    l: &mut [u8; QK4_NL],
+) -> f32 {
     let v0 = f32::from(KVALUES_IQ4NL[0]);
     let d = -max / v0;
     let id = 1.0f32 / d;
@@ -279,15 +284,21 @@ pub fn dequantize_iq4_nl(bytes: &[u8]) -> Result<Vec<f32>, Iq4Error> {
 /// module docs). `d32` is the f32 scale the encoder returned for this block; use [`Iq4Nl`] to get the bound
 /// of a whole conversion.
 pub fn iq4_nl_block_bound(chunk: &[f32; QK4_NL], d32: f32) -> f64 {
+    sub_block_bound(chunk, d32, f16::from_f32(d32).to_f32())
+}
+
+/// The proven worst-case `|x - x'|` over 32 elements encoded against the f32 scale `enc` and decoded with the
+/// scale `dec` (`enc` is `0` when the nibbles were all set to 8, which decode to `0`). Shared with IQ4_XS,
+/// where `enc = d32 * l` and `dec = d16 * l`.
+pub(crate) fn sub_block_bound(chunk: &[f32; QK4_NL], enc: f32, dec: f32) -> f64 {
     let amax = chunk.iter().fold(0.0f32, |m, v| m.max(v.abs()));
-    if d32 == 0.0 {
+    if enc == 0.0 {
         return f64::from(amax);
     }
-    let d16 = f16::from_f32(d32).to_f32();
-    if d16.is_infinite() {
+    if dec.is_infinite() {
         return f64::INFINITY;
     }
-    let (d32, d16) = (f64::from(d32), f64::from(d16));
+    let (d32, d16) = (f64::from(enc), f64::from(dec));
     let (v0, v15) = (f64::from(KVALUES_IQ4NL[0]), f64::from(KVALUES_IQ4NL[15]));
     let slack = 2f64.powi(-22);
     let mut worst = 0.0f64;
