@@ -425,3 +425,58 @@ fn awq_pack_order_against_dense() {
         "median row correlation {worst} (a permuted column order gives about 0)"
     );
 }
+
+/// GPTQ against the dense model it was quantized from (SmolLM2-360M-Instruct), REAL checkpoint: AutoRound's
+/// export in AutoGPTQ v1 format (4-bit, group 64, asymmetric, `desc_act` false; pinned commit in the PR body).
+///
+/// GPTQ stores no folded scales, so the dequantized `[IC, OC]` matrix is the dense weight transposed up to
+/// 4-bit noise. Asserted per layer: median row correlation with dense, and relative RMSE against dense. A
+/// wrong nibble order scrambles rows (correlation collapses); a wrong zero-point offset (the stored `z - 1`)
+/// leaves correlation high but shifts every value by a whole scale, which the RMSE bound catches.
+#[test]
+fn gptq_real_checkpoint_against_dense() {
+    let (Some(mut gptq), Some(mut dense)) = (
+        Safetensors::open("SmolLM2-360M-Instruct-GPTQ-gs64-asym"),
+        Safetensors::open("SmolLM2-360M-Instruct"),
+    ) else {
+        println!("SKIPPED: SmolLM2-360M-Instruct-GPTQ-gs64-asym or SmolLM2-360M-Instruct not under {}", models_dir().display());
+        return;
+    };
+    let (mut worst_corr, mut worst_rel) = (1.0f64, 0.0f64);
+    for l in [0usize, 11, 22, 31] {
+        for p in PROJ {
+            let name = format!("model.layers.{l}.{p}");
+            let (qs, qweight) = gptq.u32s(&format!("{name}.qweight"));
+            let (_, qzeros) = gptq.u32s(&format!("{name}.qzeros"));
+            let (_, gi) = gptq.u32s(&format!("{name}.g_idx"));
+            let scales = gptq.f16s(&format!("{name}.scales"));
+            let (ic, oc) = (qs[0] * 8, qs[1]);
+            let hf = HfGptq { ic, oc, group_size: 64, qweight, qzeros, scales, g_idx: Some(gi.iter().map(|&g| g as i32).collect()) };
+            let logical = gptq_unpack(&hf).unwrap_or_else(|e| panic!("{name}: {e}"));
+            assert_eq!(gptq_pack(&logical).unwrap().qweight, hf.qweight, "{name}: qweight round trip");
+            to_awq_logical(&logical).unwrap_or_else(|e| panic!("{name}: {e} (g_idx is not sequential)"));
+            let deq = ml_convertant_gptq::dequantize_logical(&logical).unwrap();
+            let (shape, w) = dense.bf16_f32(&format!("{name}.weight"));
+            assert_eq!(shape, vec![oc, ic], "{name}: dense shape");
+            let mut corr: Vec<f64> = (0..ic)
+                .map(|i| {
+                    let (a, b): (Vec<f64>, Vec<f64>) = (0..oc).map(|o| (f64::from(deq[i * oc + o]), f64::from(w[o * ic + i]))).unzip();
+                    let (ma, mb) = (a.iter().sum::<f64>() / oc as f64, b.iter().sum::<f64>() / oc as f64);
+                    let cov: f64 = a.iter().zip(&b).map(|(x, y)| (x - ma) * (y - mb)).sum();
+                    let (va, vb): (f64, f64) = (a.iter().map(|x| (x - ma).powi(2)).sum(), b.iter().map(|y| (y - mb).powi(2)).sum());
+                    if va > 0.0 && vb > 0.0 { cov / (va * vb).sqrt() } else { 0.0 }
+                })
+                .collect();
+            corr.sort_by(|x, y| x.partial_cmp(y).unwrap());
+            let median = corr[corr.len() / 2];
+            let sse: f64 = (0..ic).flat_map(|i| (0..oc).map(move |o| (i, o))).map(|(i, o)| (f64::from(deq[i * oc + o]) - f64::from(w[o * ic + i])).powi(2)).sum();
+            let wss: f64 = w.iter().map(|&v| f64::from(v).powi(2)).sum();
+            let rel = (sse / wss).sqrt();
+            println!("gptq l{l} {p} [{ic}x{oc}]: median row corr {median:.4}, rel rmse vs dense {rel:.4}");
+            worst_corr = worst_corr.min(median);
+            worst_rel = worst_rel.max(rel);
+        }
+    }
+    assert!(worst_corr > 0.9, "median row correlation {worst_corr}");
+    assert!(worst_rel < 0.25, "relative rmse {worst_rel}");
+}
