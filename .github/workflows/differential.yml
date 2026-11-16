@@ -105,7 +105,7 @@ jobs:
           cmp out/iq2_s.gold.deq $g/iq2_s.deq.f32
           # the lookup tables are regenerated from the pinned checkout and must equal the committed copy
           python tools/golden/gen_iq_tables.py llama.cpp out/iq_tables.rs
-          tr -d '' < crates/ml-convertant-ggml/src/iq_tables.rs > out/iq_tables.committed.rs
+          tr -d '\r' < crates/ml-convertant-ggml/src/iq_tables.rs > out/iq_tables.committed.rs
           cmp out/iq_tables.rs out/iq_tables.committed.rs
       - name: Our output equals the reference on random data
         run: |
