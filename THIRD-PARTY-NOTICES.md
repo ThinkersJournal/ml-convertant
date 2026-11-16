@@ -78,6 +78,19 @@
   `merge` adds it to the base weight; scaling `lora_alpha / r`, or `lora_alpha / sqrt(r)` with
   `use_rslora`). `ml-convertant-lora` is our own implementation; no PEFT source is copied.
 
+## ggml IQ4_NL (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `quantize_iq4_nl`, `quantize_row_iq4_nl_impl`, `best_index_int8`, `dequantize_row_iq4_nl`;
+  `ggml/src/ggml-common.h`: `block_iq4_nl`, `kvalues_iq4nl`). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the block layout, the sixteen-entry table `kvalues_iq4nl` (`-127 ... 113`, copied as data) and the encoder's algorithm.
+  `ml-convertant-ggml`'s `iq4_nl.rs` is our own implementation of that arithmetic; no ggml source file is in the crate.
+- Verification of our copy against the origin: the table and the encoder are checked byte for byte by compiling ggml's own functions from that
+  commit (`tools/golden/iq4_nl_reference.c`) and comparing: committed vectors `crates/ml-convertant-ggml/tests/golden/iq4_nl*`
+  (every one of the sixteen nibble values occurs in them, so every table entry is exercised), and the CI differential on random data.
+  The vectors were produced with gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`) on Ubuntu 24.04.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`

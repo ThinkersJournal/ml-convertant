@@ -31,7 +31,12 @@
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
 use std::fmt;
 
+mod iq4_nl;
 mod q4_0;
+pub use iq4_nl::{
+    IQ4_NL_BLOCK_BYTES, Iq4Error, Iq4Nl, KVALUES_IQ4NL, QK4_NL, dequantize_iq4_nl,
+    iq4_nl_block_bound, quantize_iq4_nl, quantize_iq4_nl_weighted,
+};
 pub use q4_0::{Q4_0, Q4_0_BLOCK_BYTES, QK4_0, dequantize_q4_0, q4_0_block_bound, quantize_q4_0};
 
 /// Elements per Q8_0 block.
