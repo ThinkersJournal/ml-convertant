@@ -28,8 +28,9 @@ measured only.
 
 Per input channel `j`, `s_j = mean|X_:,j|^alpha`, `alpha` on a grid of 20 values in `[0, 1]` (the published method's
 grid). For each `alpha`: scale `W_:,j` by `s_j`, quantize with Step 1, fold `1/s_j` back, measure output error on `X`; keep
-the `alpha` with the least error. Output is a `LogicalAwq` whose scales already include the fold-back, so no activation
-rescale is required at inference (we do not emit a "scale the previous layer" instruction; that is kernel-side).
+the `alpha` with the least error. Output is the quantized `W s` plus the per-input-channel vector `s`: a per-channel factor cannot be folded into
+AWQ's per-group scales, so (as in AutoAWQ) the caller divides the activations by `s`, normally by folding `1/s` into the
+preceding op. (Correction 2026-11-16: this note first said the fold-back was inside the scales, which is not possible.)
 Independent re-derivation from the AWQ paper (arXiv 2306.00978, MIT-licensed code not copied); the in-tree AWQ format
 stays AutoAWQ-compatible. Deterministic: grid order fixed, ties go to the smaller `alpha`.
 

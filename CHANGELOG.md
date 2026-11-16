@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.32]
+
+### Added
+- `ml-convertant-calibrate`: `search_awq` (AWQ-style scale search: per-input-channel `s_i = mean|x_i|^alpha`, alpha on a 20-point grid, least output error on the calibration activations wins, alpha 0 is round to nearest so it is never worse), with `AwqSearch`, `Searched` (the quantized `W s`, the channel scales the caller folds into the preceding op, and weight, output and baseline reports). Output error is measured; the weight bound is proven for the effective weights.
+- `docs/PATENT-SWEEP.md`: idea 18, read on file, no new search. `docs/CALIBRATION-DESIGN.md`: corrected (the channel scale cannot be folded into the per-group AWQ scale; it is returned for the caller).
+
 ## [0.1.31]
 
 ### Added
