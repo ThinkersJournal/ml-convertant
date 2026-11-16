@@ -80,7 +80,9 @@ jobs:
           cmp out/iq3_s_w.gold.deq $g/iq3_s_w.deq.f32
           # IQ3_S's grid table is regenerated from the pinned checkout and must equal the committed copy
           python tools/golden/gen_iq3s_grid.py llama.cpp out/iq3s_grid.rs
-          cmp out/iq3s_grid.rs crates/ml-convertant-ggml/src/iq3s_grid.rs
+          # (the Windows checkout may have CRLF line endings; the blob is LF)
+          tr -d '' < crates/ml-convertant-ggml/src/iq3s_grid.rs > out/iq3s_grid.committed.rs
+          cmp out/iq3s_grid.rs out/iq3s_grid.committed.rs
           # ggml's IQ3_S output on a block with an exactly-zero sub-block (which we deliberately do not reproduce)
           out/ref_iq3_s $g/iq3_s_zero_sub_block.in.f32 out/iq3_s_zs.bin out/iq3_s_zs.deq
           cmp out/iq3_s_zs.bin $g/iq3_s_zero_sub_block.ggml.out.bin
