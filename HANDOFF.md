@@ -7,7 +7,8 @@ layout), calibrate (RTN and search_awq), lora (merge into f32 / ggml / NF4 / AWQ
 `docs/PATENT-SWEEP.md`, `docs/IQ-DESIGN.md`, `docs/IQ-PATENT-SEARCH-2026-11-16.md` (board 307 ruled C: no integer dot kernel here). Rows 1 to 17 done.
 
 **In flight, row 18 (IQ* formats, converters only):** IQ3_S PR on branch `iq3-s`, worktree `ml-convertant-wt-iq3s`, 0.1.38 proposed (PM allocates); byte-identical to ggml `quantize_iq3_s` except blocks with an exactly-zero
-sub-block followed by a non-zero one (ggml bug, we place sub-blocks correctly; PM told). `iq3s_grid` vendored via `tools/golden/gen_iq3s_grid.py`, CI diffs it. After it merges, row 18 is done
+sub-block followed by a non-zero one (ggml bug, we place sub-blocks correctly; PM ruled keep). Upstream issue DRAFT in `docs/upstream/ISSUE-ggml-iq3s-zero-subblock.md`; PM files it (outbound-issue ledger) and tells the bot
+account's answer path; when a maintainer replies, answer (CireSnave: answer maintainers we open issues with). `iq3s_grid` vendored via `tools/golden/gen_iq3s_grid.py`, CI diffs it. After it merges, row 18 is done
 unless the PM adds IQ2_*/IQ3_XXS (not scheduled).
 Fuel's targets: Iq4Nl/Iq4Xs/Iq3S in GGUF on-disk layout.
 **RELEASE GATE: no published version ships IQ* until the CPC/assignee patent database search is done (routed by the PM, not reported finished) or CireSnave decides.**
