@@ -7,7 +7,7 @@ second number.
 ## [0.1.33]
 
 ### Added
-- `tests/real_checkpoints.rs` (by the mlmf lane, corpus-gated: prints SKIPPED when `C:/Models` is absent): real Qwen3-0.6B-AWQ layers (196) round-trip through `pack_hf`/`unpack_hf` and the kernel repack with bit-identical dequantized values; real SmolLM2-360M weights through `rtn_awq` and `search_awq` with SYNTHETIC activations. These cannot see a consistent column permutation: the AWQ pack order against AutoAWQ is still not verified, and no real GPTQ checkpoint or real activations were used.
+- `tests/real_checkpoints.rs` (by the mlmf lane, corpus-gated: prints SKIPPED when `C:/Models` is absent): real Qwen3-0.6B-AWQ layers (196) round-trip through `pack_hf`/`unpack_hf` and the kernel repack with bit-identical dequantized values; real SmolLM2-360M weights through `rtn_awq` and `search_awq` with SYNTHETIC activations. `awq_pack_order_against_dense` correlates dequantized AWQ rows with the dense Qwen3-0.6B weights (median row correlation 0.97 to 0.995; with `HF_AWQ_PACK_ORDER` mutated to identity about 0.24 and the test fails): the AWQ pack order is checked against a real checkpoint's meaning, not AutoAWQ's code. No real GPTQ checkpoint or real activations were used.
 
 ## [0.1.32]
 

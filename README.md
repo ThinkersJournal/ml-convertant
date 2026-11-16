@@ -38,7 +38,7 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
 
-**Real-checkpoint test (corpus-gated):** `tests/real_checkpoints.rs` runs real AWQ layers and real dense weights when `C:/Models` exists. It checks round trips and ranges only; flipping the AWQ pack order to identity leaves it green, so the pack order is **still not checked against AutoAWQ** (needs a dense reference to correlate against). Calibrate ran on synthetic activations there.
+**Real-checkpoint test (corpus-gated):** `tests/real_checkpoints.rs` runs real AWQ layers and real dense weights when `C:/Models` exists. Round trips and ranges cannot see a column permutation, so `awq_pack_order_against_dense` correlates dequantized rows with dense Qwen3-0.6B (median 0.97 to 0.995; identity order gives about 0.24 and fails). That verifies the pack order against a real checkpoint, **not against AutoAWQ's code**. Calibrate ran on synthetic activations there.
 
 **Calibrate verification limits:** `ml-convertant-calibrate` is checked against the LoRA crate's AWQ requantizer and hand-worked groups. **Not compared with a real AWQ checkpoint**; the scale search is re-derived from the paper, not compared with AutoAWQ's scales, and output error is measured, not bounded.
 
