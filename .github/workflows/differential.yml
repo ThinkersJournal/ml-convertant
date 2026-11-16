@@ -47,7 +47,7 @@ jobs:
       - name: Build ggml reference harnesses
         run: |
           mkdir -p out
-          for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
+          for f in q8_0 q4_0 iq4_nl q2_k q3_k q4_k q5_k q6_k; do
             # -DNDEBUG as llama.cpp builds (the K-quant reference asserts on out-of-range intermediates).
             gcc -O2 -DNDEBUG -ffp-contract=off -w \
               -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
@@ -59,17 +59,22 @@ jobs:
           cargo build --release --locked -p ml-convertant-kquants --example convert_kquants_file
       - name: Committed vectors reproduce from the pinned reference
         run: |
-          for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
+          for f in q8_0 q4_0 iq4_nl q2_k q3_k q4_k q5_k q6_k; do
             case $f in *_k) g=crates/ml-convertant-kquants/tests/golden;; *) g=crates/ml-convertant-ggml/tests/golden;; esac
             out/ref_$f $g/$f.in.f32 out/$f.gold.bin out/$f.gold.deq
             cmp out/$f.gold.bin $g/$f.out.bin
             cmp out/$f.gold.deq $g/$f.deq.f32
           done
+          # IQ4_NL with an importance vector (one 64-element row repeated over the input's rows)
+          g=crates/ml-convertant-ggml/tests/golden
+          out/ref_iq4_nl $g/iq4_nl.in.f32 out/iq4_nl_w.gold.bin out/iq4_nl_w.gold.deq $g/iq4_nl.imp.f32
+          cmp out/iq4_nl_w.gold.bin $g/iq4_nl_w.out.bin
+          cmp out/iq4_nl_w.gold.deq $g/iq4_nl_w.deq.f32
       - name: Our output equals the reference on random data
         run: |
           for seed in 1 2 3; do
             python tools/golden/gen_random_f32.py out/rand.f32 20000 $seed
-            for f in q8_0 q4_0 q2_k q3_k q4_k q5_k q6_k; do
+            for f in q8_0 q4_0 iq4_nl q2_k q3_k q4_k q5_k q6_k; do
               case $f in *_k) bin=convert_kquants_file;; *) bin=convert_file;; esac
               out/ref_$f out/rand.f32 out/ref.bin out/ref.deq
               target/release/examples/$bin $f out/rand.f32 out/our.bin out/our.deq
@@ -77,4 +82,11 @@ jobs:
               cmp out/ref.deq out/our.deq
               echo "$f seed $seed: $(wc -c < out/ref.bin) bytes identical"
             done
+            # IQ4_NL with a random non-negative importance vector (one 32-element row, so any input length works)
+            python -c "import random,struct,sys; random.seed($seed); sys.stdout.buffer.write(struct.pack('<32f',*[random.uniform(0,4) for _ in range(32)]))" > out/imp.f32
+            out/ref_iq4_nl out/rand.f32 out/ref.bin out/ref.deq out/imp.f32
+            target/release/examples/convert_file iq4_nl out/rand.f32 out/our.bin out/our.deq out/imp.f32
+            cmp out/ref.bin out/our.bin
+            cmp out/ref.deq out/our.deq
+            echo "iq4_nl (importance) seed $seed: $(wc -c < out/ref.bin) bytes identical"
           done
