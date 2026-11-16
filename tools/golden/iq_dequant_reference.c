@@ -14,7 +14,7 @@ static FILE*create(const char*path){
 void ggml_abort(const char*f,int l,const char*fmt,...){fprintf(stderr,"abort %s:%d\n",f,l);exit(2);}
 /* usage: iq_dequant_reference <format> blocks.bin out.f32
    Calls ggml's own dequantize_row_<format> on raw blocks (any bytes with a finite f16 scale are a valid block).
-   format: iq3_xxs. */
+   format: iq3_xxs, iq2_xxs. */
 int main(int argc,char**argv){
   if(argc<4)return 2;
   FILE*f=fopen(argv[2],"rb");if(!f){fprintf(stderr,"open failed\n");return 2;}
@@ -24,6 +24,9 @@ int main(int argc,char**argv){
   if(!strcmp(argv[1],"iq3_xxs")){
     if(nb%sizeof(block_iq3_xxs))return 2;n=nb/sizeof(block_iq3_xxs)*256;d=malloc(n*4);
     dequantize_row_iq3_xxs((const block_iq3_xxs*)b,d,n);
+  }else if(!strcmp(argv[1],"iq2_xxs")){
+    if(nb%sizeof(block_iq2_xxs))return 2;n=nb/sizeof(block_iq2_xxs)*256;d=malloc(n*4);
+    dequantize_row_iq2_xxs((const block_iq2_xxs*)b,d,n);
   }else{fprintf(stderr,"unknown format %s\n",argv[1]);return 2;}
   f=create(argv[3]);fwrite(d,4,n,f);fclose(f);
   printf("%s blocks_bytes=%ld n=%ld\n",argv[1],nb,n);return 0;}

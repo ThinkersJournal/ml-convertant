@@ -12,6 +12,6 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.40" }
-ml-convertant-awq = { path = "../ml-convertant-awq", version = "0.1.40" }
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.41" }
+ml-convertant-awq = { path = "../ml-convertant-awq", version = "0.1.41" }
 half = "2"
