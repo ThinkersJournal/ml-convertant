@@ -362,3 +362,39 @@ fn calibrate_on_real_weights() {
     }
     assert_eq!(gains.len(), 9);
 }
+
+/// Pack-order check against the dense checkpoint the AWQ one was made from (Qwen/Qwen3-0.6B).
+///
+/// AutoAWQ folds a per-INPUT-channel scale into each layer, so row `i` of the dequantized `[IC, OC]`
+/// matrix is the dense column `i` times a constant (plus 4-bit noise). The Pearson correlation of those two
+/// vectors, over the output channels, is therefore high when nibble order and scale/zero alignment are
+/// right and near zero when output columns are permuted. The median over input rows is asserted.
+#[test]
+fn awq_pack_order_against_dense() {
+    let (Some(mut awq), Some(mut dense)) = (Safetensors::open("Qwen3-0.6B-AWQ"), Safetensors::open("Qwen3-0.6B-dense")) else {
+        println!("SKIPPED: Qwen3-0.6B-AWQ or Qwen3-0.6B-dense not under {}", models_dir().display());
+        return;
+    };
+    let mut worst = 1.0f64;
+    for (l, p) in [(0, "self_attn.q_proj"), (3, "self_attn.v_proj"), (9, "mlp.gate_proj"), (14, "mlp.down_proj"), (27, "mlp.up_proj")] {
+        let logical = unpack_hf(&awq_layer(&mut awq, &format!("model.layers.{l}.{p}"))).unwrap();
+        let (ic, oc) = (logical.ic, logical.oc);
+        let deq = dequantize_logical(&logical).unwrap();
+        let (shape, w) = dense.bf16_f32(&format!("model.layers.{l}.{p}.weight"));
+        assert_eq!(shape, vec![oc, ic], "layer {l} {p}: dense shape");
+        let mut corr: Vec<f64> = (0..ic)
+            .map(|i| {
+                let (a, b): (Vec<f64>, Vec<f64>) = (0..oc).map(|o| (f64::from(deq[i * oc + o]), f64::from(w[o * ic + i]))).unzip();
+                let (ma, mb) = (a.iter().sum::<f64>() / oc as f64, b.iter().sum::<f64>() / oc as f64);
+                let cov: f64 = a.iter().zip(&b).map(|(x, y)| (x - ma) * (y - mb)).sum();
+                let (va, vb): (f64, f64) = (a.iter().map(|x| (x - ma).powi(2)).sum(), b.iter().map(|y| (y - mb).powi(2)).sum());
+                if va > 0.0 && vb > 0.0 { cov / (va * vb).sqrt() } else { 0.0 }
+            })
+            .collect();
+        corr.sort_by(|x, y| x.partial_cmp(y).unwrap());
+        let median = corr[corr.len() / 2];
+        println!("pack-order l{l} {p} [{ic}x{oc}]: median row correlation with dense {median:.4}");
+        worst = worst.min(median);
+    }
+    assert!(worst > 0.9, "median row correlation {worst} (a permuted column order gives about 0)");
+}
