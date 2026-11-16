@@ -82,6 +82,16 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     chosen by least output error on calibration activations. **Read 2026-11-16 against what is already on file, with no new search run**
     (the calibration re-sweep was thin). Forward-only grid search: no training or gradient step (H8), no histogram, tail discard,
     moving-average maximum or power-of-two clipping (H9), no kernel. Not a search result, not legal advice.
+19. A 4-bit non-linear value table (`IQ4_NL`, `IQ4_XS` in the IQ* row): each weight is the nearest of sixteen fixed table values times a block scale
+    (`IQ4_XS` adds 6-bit sub-block scales under an f16 super-block scale). **Read 2026-11-16 against what is already on file, plus W9, with no
+    patent database searched.** The table is fixed and published in ggml (MIT, `ggml-common.h`), as NF4's is in the QLoRA paper (idea 3); no learned
+    or per-layer codebook and no bit-width selection (H23 claim 13). Encoding only; no table lookup inside a multiply. Not a search result, not legal advice.
+20. Grid-codebook formats (`IQ3_S`, and later `IQ2_*` and `IQ3_XXS`): groups of weights are mapped to an entry of a fixed table of lattice-like grid points plus signs and a
+    scale. **Read 2026-11-16 as W8 only (QuIP# and later lattice papers, no patent found, none read).** Named, unread: any patent on E8 or Leech-lattice weight
+    codebooks. We would implement ggml's published fixed grids, not a learned or per-group codebook, and no incoherence processing.
+21. Importance-weighted quantization error (llama.cpp's importance matrix): per-input-channel mean squared activation used to weight the error when choosing block scales.
+    **Read 2026-11-16 as W10 only; no patent found, none read.** Not the calibration of idea 11 or 17 (no activation-aware scaling of weights here) and uses
+    no histogram, tail discard, moving maximum or power-of-two clipping (H9). The converter takes the importance vector as caller input, as it does calibration activations.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 
@@ -121,6 +131,7 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
 | A1 to A12 | 3-12 | second batch of sharper keyword queries (double quantization, normal float, LoRA merge, AWQ, repack, super-block, 32-weight block file format, error reporting, format conversion, bit-exact verification, calibration, dequantize-merge-quantize), 2026-10-26 | Google Patents XHR | mostly unrelated (video coding, wireless sensing, hardware safety); A7 repeated the Nvidia/Microsoft cluster; A8 found MathWorks EP3843013A1 (H7); A10 found EP3788557B1 (H13); A5, A6, A9, A11, A12 found nothing relevant |
 | W1 to W5 | 1, 3, 5, 7, 8 | five phrasings of the above through the web search tool (two restricted to Google Patents and Justia) | web search | no patent claims; leads only (EP4341862A1) |
 | W6, W7 | 11 | calibration data importance weights per-channel scaling activation statistics; activation-aware weight quantization salient channels (web search, 2026-11-15) | web search | THIN: no patent database searched; only papers returned (AWQ, GPTQ, 2026 calibration preprints), no new lead. H9 stays the nearest read |
+| W8 to W10 | 19, 20, 21 | (web search, 2026-11-16, three queries) lattice or codebook vector quantization of LLM weights; non-uniform 4-bit lookup table with block scale; importance-matrix weighted quantization error | web search | **THIN: no patent database searched.** Papers only (QuIP#, GLVQ, Leech-lattice VQ, Any4, GANQ, FLUTE, vLLM and llama.cpp imatrix text). One patent turned up, US11348009B2 (Samsung), read as H23 |
 
 ## Leads
 
@@ -163,6 +174,7 @@ Google Patents was throttled, so these are not machine-converted text.
 | H20 | CN113273082B (Microsoft; family of H17) | Neural network activation compression with outlier block floating point | Microsoft | claim 1 (machine translation read to the second conversion) | as H17 | generating activations for training data, determining outlier activation values with extra bits, converting to a block format with shared exponent; activations in training | outside as read |
 | H21 | US20250384257A1 (Intel application) | Machine learning sparse computation mechanism for arbitrary neural networks | Intel | claim 1 (read in full) | A matrix accelerator | A **graphics processor** with a hardware scheduler, multiprocessors, a matrix accelerator and offload circuitry. Hardware; we are software conversions | outside as read |
 | H22 | CN111937010B (Amazon) | Accelerated quantized multiplication and addition operations | Amazon | claim 1 (machine translation, read to the subtraction-engine step) | Linear quantization of floating-point values to n-bit integers with the minimum mapped to zero, the maximum to 2^n - 1 and floating-point zero represented exactly (the shape of an affine min/scale format such as Q4_K) | Concerns the **inputs to a convolutional layer at inference**: store the integers, "read ... by the convolutional layer", a **subtraction engine** subtracting the zero-point integer, and the following accelerated multiply-add. We convert stored weights offline; no convolution, no subtraction engine. Near on the quantization shape, so any future runtime kernel must be re-read against it | outside as read |
+| H23 | US11348009B2 (Samsung, Google Patents: active, expiry est. 2041) | Non-uniform quantization of pre-trained deep neural network | Samsung | claims 1 and 7 (read to the first limitations, system forms with range, squarer and multiplier circuits) and claim 13 (read to its first dependent) | Per layer or channel weight range, then a bit-width chosen for each layer or channel as the master bit-width with the least quantization noise | Claim 13 is a method that, for each layer or channel, computes the quantization noise at each bit-width in a fixed set and selects the least. **Relevant to automatic per-tensor format choice from measured error (as H4, H18): this repository never chooses a format, the caller does; do not add it.** Not relevant to a fixed table (IQ4_NL) or fixed grids | outside as read |
 
 **Flag for the PM, outside this repository (board 307):** H1 and H2 are about the arithmetic of running a quantized computation
 (multipliers at the reduced bitwidth, per-vector scaling of dot-products, accumulation; for H1 claims 1, 14 and 17 no layer is needed). That is the territory of
@@ -209,6 +221,16 @@ never ran. Claims of H19, H20 and H22 were read in Google's machine translation.
 independent claims after claim 1 were identified by their opening words (and, for H9, H12 and H14, partly read) rather
 than read to the end; they are the system or medium counterparts of claim 1 in every case.
 
+### Named, unread (IQ* sweep, 2026-11-16)
+
+Nothing below was read as a claim; each is a place a patent could be and was not searched. No patent database was searched for this
+batch (three web-search queries, W8 to W10).
+- Patents on lattice or codebook vector quantization of neural-network weights (E8, Leech lattice, learned per-group codebooks): none identified, none read.
+- Patents on non-uniform 4-bit value tables for weights beyond H23: none identified.
+- Patents on importance-weighted (activation-squared) quantization error: none identified.
+- Google Patents and Espacenet full-text search by CPC (G06N 3/0495, H03M 7/30) and by the assignees of the papers above: not run.
+- The claims of H23 after claim 13's first dependent: not read.
+
 ## Re-read triggers
 
 Sweep again (new mechanism, per `PATENT-SWEEP-PROCESS.md`) before shipping any of:
@@ -219,6 +241,8 @@ Sweep again (new mechanism, per `PATENT-SWEEP-PROCESS.md`) before shipping any o
 - training adapters or quantization-aware training (H8, H10, H11, H12, H14);
 - a power-of-two (exponent-only) block scale, MX-style formats, or hardware-targeted code (H6, H13);
 - merging into a quantized base (ROADMAP row 11) re-reads H8 and the quantization hits.
+- choosing a format or bit-width per tensor or per channel from measured error (H4, H18, H23);
+- a learned or per-group codebook, lattice codebooks, or any IQ* type beyond the fixed ggml tables (idea 20).
 
 ## Limitations
 

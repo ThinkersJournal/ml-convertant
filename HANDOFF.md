@@ -2,16 +2,16 @@
 
 State 2026-11-15. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.31 at ce5843f; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
+**On main (0.1.34 at af9c66e; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
 layout), lora (merge into f32 / ggml / NF4 / AWQ bases), mlmf glue (GGUF or safetensors in, GGUF out), names; CI differential vs llama.cpp;
-`docs/PATENT-SWEEP.md` (board 307 ruled C: no integer dot kernel here). Rows 1 to 16 done; 17 half (RTN).
+`docs/PATENT-SWEEP.md` (board 307 ruled C: no integer dot kernel here). Rows 1 to 17 done.
 
-**In flight:** row 17 calibration, crate `ml-convertant-calibrate` (0.1.31 published, RTN). This PR: `search_awq`, branch `calibrate-search`, worktree
-`ml-convertant-wt-search`, 0.1.32 proposed (PM allocates). After it merges: IQ* formats (patent re-sweep first; ask the PM if it finds a row). Lightbulb and fuel are not on Synapse; the PM relays. Converters only; no kernel (board 307 C). Do not combine H9's tail-discard,
-moving-average maximum and power-of-two clipping.
+**In flight (PM go 2026-11-16, row 18):** IQ* formats. This PR is the thin patent re-sweep (ideas 19 to 21, H23, named-unread) plus `docs/IQ-DESIGN.md`; branch `iq-sweep`,
+worktree `ml-convertant-wt-iqsweep`, 0.1.35 (PM allocates). Next: IQ4_NL then IQ4_XS (golden harness against llama.cpp `9d57ce456c`), then IQ3_S (vendor `iq3s_grid` with provenance). Fuel's targets:
+Iq4Nl/Iq4Xs/Iq3S in GGUF on-disk layout. Converters only; no kernel (board 307 C). Row 17 done (RTN #33, search #34, real tests #35/#36). Lightbulb and fuel are not on Synapse; the PM relays.
 
 **Facts worth keeping:** Q8_0..Q6_K byte-identical to ggml's own code (llama.cpp `9d57ce456c`). NF4 reproduces a real bitsandbytes checkpoint.
-AWQ repack identical to Fuel's, NOT checked against a real AWQ checkpoint; GPTQ and calibrate likewise unchecked on real checkpoints. LoRA merge NOT compared
+AWQ pack order checked against dense Qwen3-0.6B (not AutoAWQ code); GPTQ against one AutoRound-exported checkpoint (act-order unchecked); search_awq not checked against AutoAWQ or real activations. LoRA merge NOT compared
 with PEFT-merged weights. One version for every crate and path-dep minimum.
 
 **Patent sweep:** calibration re-sweep (#32) was thin: two web queries, no patent database. Re-read triggers in `docs/PATENT-SWEEP.md`. Google Patents throttles

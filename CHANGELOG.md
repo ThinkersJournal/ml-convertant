@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.35]
+
+### Added
+- `docs/PATENT-SWEEP.md`: IQ* re-sweep recorded as THIN (three web queries W8 to W10, no patent database searched): ideas 19 to 21, hit H23 (US11348009B2, per-layer bit-width selection), and a named-unread list. `docs/IQ-DESIGN.md`: design note for ROADMAP row 18 (IQ4_NL, IQ4_XS, IQ3_S, GGUF on-disk layouts, no kernel).
+
 ## [0.1.34]
 
 ### Added
