@@ -45,8 +45,9 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "ml-convertant"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
+ "half",
  "ml-convertant-awq",
  "ml-convertant-calibrate",
  "ml-convertant-core",
@@ -57,11 +58,12 @@ dependencies = [
  "ml-convertant-mlmf",
  "ml-convertant-names",
  "ml-convertant-nf4",
+ "serde_json",
 ]
 
 [[package]]
 name = "ml-convertant-awq"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -69,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-calibrate"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-awq",
@@ -79,11 +81,11 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-core"
-version = "0.1.32"
+version = "0.1.33"
 
 [[package]]
 name = "ml-convertant-ggml"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -91,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-gptq"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-awq",
@@ -100,7 +102,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-kquants"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -108,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-lora"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-awq",
@@ -120,7 +122,7 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-mlmf"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-core",
@@ -134,11 +136,11 @@ dependencies = [
 
 [[package]]
 name = "ml-convertant-names"
-version = "0.1.32"
+version = "0.1.33"
 
 [[package]]
 name = "ml-convertant-nf4"
-version = "0.1.32"
+version = "0.1.33"
 dependencies = [
  "half",
  "ml-convertant-core",

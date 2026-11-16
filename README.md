@@ -38,6 +38,8 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
 
+**Real-checkpoint test (corpus-gated):** `tests/real_checkpoints.rs` runs real AWQ layers and real dense weights when `C:/Models` exists. It checks round trips and ranges only; flipping the AWQ pack order to identity leaves it green, so the pack order is **still not checked against AutoAWQ** (needs a dense reference to correlate against). Calibrate ran on synthetic activations there.
+
 **Calibrate verification limits:** `ml-convertant-calibrate` is checked against the LoRA crate's AWQ requantizer and hand-worked groups. **Not compared with a real AWQ checkpoint**; the scale search is re-derived from the paper, not compared with AutoAWQ's scales, and output error is measured, not bounded.
 
 **GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. **No real GPTQ checkpoint's bytes have been checked**; only 4-bit, and activation-order layers are refused by the AWQ conversion.

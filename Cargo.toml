@@ -2,7 +2,7 @@
 members = [".", "crates/*"]
 
 [workspace.package]
-version = "0.1.32"
+version = "0.1.33"
 edition = "2024"
 rust-version = "1.95"
 authors = ["Eric Evans <ciresnave@gmail.com>"]
@@ -23,13 +23,17 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ml-convertant-core = { path = "crates/ml-convertant-core", version = "0.1.32" }
-ml-convertant-ggml = { path = "crates/ml-convertant-ggml", version = "0.1.32" }
-ml-convertant-kquants = { path = "crates/ml-convertant-kquants", version = "0.1.32" }
-ml-convertant-nf4 = { path = "crates/ml-convertant-nf4", version = "0.1.32" }
-ml-convertant-awq = { path = "crates/ml-convertant-awq", version = "0.1.32" }
-ml-convertant-gptq = { path = "crates/ml-convertant-gptq", version = "0.1.32" }
-ml-convertant-calibrate = { path = "crates/ml-convertant-calibrate", version = "0.1.32" }
-ml-convertant-lora = { path = "crates/ml-convertant-lora", version = "0.1.32" }
-ml-convertant-mlmf = { path = "crates/ml-convertant-mlmf", version = "0.1.32" }
-ml-convertant-names = { path = "crates/ml-convertant-names", version = "0.1.32" }
+ml-convertant-core = { path = "crates/ml-convertant-core", version = "0.1.33" }
+ml-convertant-ggml = { path = "crates/ml-convertant-ggml", version = "0.1.33" }
+ml-convertant-kquants = { path = "crates/ml-convertant-kquants", version = "0.1.33" }
+ml-convertant-nf4 = { path = "crates/ml-convertant-nf4", version = "0.1.33" }
+ml-convertant-awq = { path = "crates/ml-convertant-awq", version = "0.1.33" }
+ml-convertant-gptq = { path = "crates/ml-convertant-gptq", version = "0.1.33" }
+ml-convertant-calibrate = { path = "crates/ml-convertant-calibrate", version = "0.1.33" }
+ml-convertant-lora = { path = "crates/ml-convertant-lora", version = "0.1.33" }
+ml-convertant-mlmf = { path = "crates/ml-convertant-mlmf", version = "0.1.33" }
+ml-convertant-names = { path = "crates/ml-convertant-names", version = "0.1.33" }
+
+[dev-dependencies]
+half = "2"
+serde_json = "1"
