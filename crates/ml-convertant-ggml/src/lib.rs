@@ -31,6 +31,7 @@
 use ml_convertant_core::{Conversion, Converted, ErrorReport, LengthMismatch};
 use std::fmt;
 
+mod iq2_s;
 mod iq2_xs;
 mod iq2_xxs;
 mod iq3_s;
@@ -40,6 +41,7 @@ mod iq4_nl;
 mod iq4_xs;
 mod iq_tables;
 mod q4_0;
+pub use iq2_s::{IQ2_S_BLOCK_BYTES, QK_IQ2_S, dequantize_iq2_s};
 pub use iq2_xs::{IQ2_XS_BLOCK_BYTES, QK_IQ2_XS, dequantize_iq2_xs};
 pub use iq2_xxs::{IQ2_XXS_BLOCK_BYTES, QK_IQ2_XXS, dequantize_iq2_xxs};
 pub use iq3_s::{
