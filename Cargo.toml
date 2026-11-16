@@ -33,3 +33,7 @@ ml-convertant-calibrate = { path = "crates/ml-convertant-calibrate", version = "
 ml-convertant-lora = { path = "crates/ml-convertant-lora", version = "0.1.32" }
 ml-convertant-mlmf = { path = "crates/ml-convertant-mlmf", version = "0.1.32" }
 ml-convertant-names = { path = "crates/ml-convertant-names", version = "0.1.32" }
+
+[dev-dependencies]
+half = "2"
+serde_json = "1"
