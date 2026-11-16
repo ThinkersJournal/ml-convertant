@@ -53,6 +53,11 @@ jobs:
               -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
               tools/golden/${f}_reference.c llama.cpp/ggml/src/ggml-quants.c -lm -o out/ref_$f
           done
+      - name: Build the decode-only reference
+        run: |
+          gcc -O2 -DNDEBUG -ffp-contract=off -w \
+            -Illama.cpp/ggml/src -Illama.cpp/ggml/include \
+            tools/golden/iq_dequant_reference.c llama.cpp/ggml/src/ggml-quants.c -lm -o out/ref_iq_dequant
       - name: Build our converters
         run: |
           cargo build --release --locked -p ml-convertant-ggml --example convert_file
@@ -87,6 +92,21 @@ jobs:
           out/ref_iq3_s $g/iq3_s_zero_sub_block.in.f32 out/iq3_s_zs.bin out/iq3_s_zs.deq
           cmp out/iq3_s_zs.bin $g/iq3_s_zero_sub_block.ggml.out.bin
           cmp out/iq3_s_zs.deq $g/iq3_s_zero_sub_block.ggml.deq.f32
+      - name: Decode-only vectors and tables reproduce from the pinned reference
+        run: |
+          g=crates/ml-convertant-ggml/tests/golden
+          out/ref_iq_dequant iq3_xxs $g/iq3_xxs.blocks.bin out/iq3_xxs.gold.deq
+          cmp out/iq3_xxs.gold.deq $g/iq3_xxs.deq.f32
+          out/ref_iq_dequant iq2_xxs $g/iq2_xxs.blocks.bin out/iq2_xxs.gold.deq
+          cmp out/iq2_xxs.gold.deq $g/iq2_xxs.deq.f32
+          out/ref_iq_dequant iq2_xs $g/iq2_xs.blocks.bin out/iq2_xs.gold.deq
+          cmp out/iq2_xs.gold.deq $g/iq2_xs.deq.f32
+          out/ref_iq_dequant iq2_s $g/iq2_s.blocks.bin out/iq2_s.gold.deq
+          cmp out/iq2_s.gold.deq $g/iq2_s.deq.f32
+          # the lookup tables are regenerated from the pinned checkout and must equal the committed copy
+          python tools/golden/gen_iq_tables.py llama.cpp out/iq_tables.rs
+          tr -d '\r' < crates/ml-convertant-ggml/src/iq_tables.rs > out/iq_tables.committed.rs
+          cmp out/iq_tables.rs out/iq_tables.committed.rs
       - name: Our output equals the reference on random data
         run: |
           for seed in 1 2 3; do
