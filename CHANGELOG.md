@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.34]
+
+### Added
+- `tests/real_checkpoints.rs`: `awq_pack_order_against_dense` (written by the mlmf lane) correlates dequantized AWQ rows of the real Qwen3-0.6B-AWQ with the dense Qwen3-0.6B weights: median row correlation 0.97 to 0.995; with `HF_AWQ_PACK_ORDER` mutated to identity about 0.24 and the test fails. This **supersedes** the 0.1.33 note that the pack order could not be seen: it is now checked against a real checkpoint's meaning, **not against AutoAWQ's code**. `gptq_real_checkpoint_against_dense` (also from mlmf) unpacks a real GPTQ checkpoint (SmolLM2-360M-Instruct, group size 64, asymmetric; Intel AutoRound's export in AutoGPTQ v1 format, not AutoGPTQ's own output) and correlates it with the dense weights: 28 layers, median row correlation 0.986 to 0.996, relative rmse 0.09 to 0.125; dropping the `+1` zero offset or reversing the nibble order makes it fail (re-run here). Still no real activations.
+
 ## [0.1.33]
 
 ### Added
