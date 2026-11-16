@@ -1,16 +1,19 @@
-"""Regenerate tests/golden/real_iq_dequant.tsv: for every IQ4_NL / IQ4_XS / IQ3_S tensor in the real GGUF
+"""Regenerate tests/golden/real_iq_dequant.tsv: for every IQ4_NL / IQ4_XS / IQ3_S / IQ3_XXS tensor in the real GGUF
 files, the SHA-256 of ggml's own dequantize_row_* output (little-endian f32), from the pinned llama.cpp.
 
 usage: gen_real_iq_dequant.py <models_dir> <reference_binary_cmd> <workdir>
-  models_dir  holds gguf-corpus/quants/SmolLM2-135M-Instruct-{IQ3_XS,IQ4_XS}.gguf
+  models_dir  holds gguf-corpus/quants/SmolLM2-135M-Instruct-{IQ3_XS,IQ4_XS}.gguf and
+              gguf-corpus/iq-extra/smollm2-135m-instruct-iq3_xxs-imat.gguf
   reference_binary_cmd  command prefix that runs tools/golden/gguf_dequant_reference, e.g.
                         "wsl.exe -d Ubuntu-24.04 -- /root/out/gguf_dequant_reference"
   workdir     a scratch dir visible to both (the binary is given the same path)
 """
 import hashlib, os, struct, subprocess, sys
 
-TYPES = {20: ("IQ4_NL", 32, 18), 21: ("IQ3_S", 256, 110), 23: ("IQ4_XS", 256, 136)}
-FILES = ["SmolLM2-135M-Instruct-IQ3_XS.gguf", "SmolLM2-135M-Instruct-IQ4_XS.gguf"]
+TYPES = {18: ("IQ3_XXS", 256, 98), 20: ("IQ4_NL", 32, 18), 21: ("IQ3_S", 256, 110), 23: ("IQ4_XS", 256, 136)}
+# paths relative to <models_dir>/gguf-corpus; this is also the TSV file column
+FILES = ["quants/SmolLM2-135M-Instruct-IQ3_XS.gguf", "quants/SmolLM2-135M-Instruct-IQ4_XS.gguf",
+         "iq-extra/smollm2-135m-instruct-iq3_xxs-imat.gguf"]
 
 
 def rd(f, fmt):
@@ -81,7 +84,7 @@ def main():
     models, cmd, work = sys.argv[1], sys.argv[2].split(), sys.argv[3]
     rows = []
     for name in FILES:
-        path = os.path.join(models, "gguf-corpus", "quants", name)
+        path = os.path.join(models, "gguf-corpus", name)
         whole = hashlib.sha256(open(path, "rb").read()).hexdigest()
         base, ts = parse(path)
         spec, sel = [], []
