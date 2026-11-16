@@ -1,0 +1,20 @@
+[package]
+name = "ml-convertant-calibrate"
+description = "Calibrated quantization for ml-convertant: round-to-nearest AWQ-layout baseline with weight and output error reports."
+readme = "README.md"
+keywords = ["machine-learning", "quantization", "calibration", "awq", "int4"]
+categories = ["science"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ml-convertant-core = { path = "../ml-convertant-core", version = "0.1.30" }
+ml-convertant-awq = { path = "../ml-convertant-awq", version = "0.1.30" }
+half = "2"
+
+[dev-dependencies]
+ml-convertant-lora = { path = "../ml-convertant-lora", version = "0.1.30" }
