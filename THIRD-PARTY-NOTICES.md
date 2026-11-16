@@ -103,6 +103,20 @@
   (all sixteen nibble values and both ends of the 6-bit scale range occur in them), and the CI differential on random data.
   The vectors were produced with gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`) on Ubuntu 24.04.
 
+## ggml IQ3_S (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `quantize_iq3_s`, `quantize_row_iq3_s_impl`, `iq3xs_init_impl`, `iq3_find_best_neighbour`, `dequantize_row_iq3_s`;
+  `ggml/src/ggml-common.h`: `block_iq3_s`, the 512-entry table `iq3s_grid`, `kmask_iq2xs`). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the block layout, the table `iq3s_grid` (512 `u32`, copied as data into `crates/ml-convertant-ggml/src/iq3s_grid.rs`, a generated file that
+  carries this origin in its header) and the encoder's algorithm. `iq3_s.rs` is our own implementation; no ggml source file is in the crate.
+- Verification of our copy against the origin: `tools/golden/gen_iq3s_grid.py` extracts `iq3s_grid` from the pinned `ggml-common.h`, checks every entry against
+  ggml's own `kgrid_512` (the table `iq3xs_init_impl` builds its encoder grid from) and writes the Rust file; CI re-runs it on the pinned checkout and diffs the result
+  against the committed file. The encoder and decoder are checked byte for byte by compiling ggml's own functions from that commit (`tools/golden/iq3_s_reference.c`):
+  committed vectors `crates/ml-convertant-ggml/tests/golden/iq3_s*` and the CI differential on random data. The vectors were produced with gcc 13.3
+  (`-O2 -DNDEBUG -ffp-contract=off`) on Ubuntu 24.04. The one block shape where we differ from ggml on purpose is recorded in `CHANGELOG.md` and `iq3_s.rs`.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
