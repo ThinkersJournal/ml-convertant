@@ -133,6 +133,14 @@
 - What we use: the block layout, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq2_xxs.rs` is our own implementation; no ggml source file is in the crate. Decode only.
 - Verification: as for IQ3_XXS above: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq2_xxs` (`tools/golden/iq_dequant_reference.c`) is compared bit for bit on 64 random blocks covering every grid point and sign pattern (`crates/ml-convertant-ggml/tests/golden/iq2_xxs*`), reproduced by CI. gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`), Ubuntu 24.04.
 
+## ggml IQ2_XS decode (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `dequantize_row_iq2_xs`; `ggml/src/ggml-common.h`: `block_iq2_xs`, the table `iq2xs_grid` (512 `u64`), plus `ksigns_iq2xs` and `kmask_iq2xs` as for IQ3_XXS). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the block layout, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq2_xs.rs` is our own implementation; no ggml source file is in the crate. Decode only.
+- Verification: as for IQ3_XXS above: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq2_xs` (`tools/golden/iq_dequant_reference.c`) is compared bit for bit on 256 random blocks covering every grid point and sign pattern (`crates/ml-convertant-ggml/tests/golden/iq2_xs*`), reproduced by CI. gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`), Ubuntu 24.04.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`

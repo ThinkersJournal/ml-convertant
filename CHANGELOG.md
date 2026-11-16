@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.42]
+
+### Added
+- `ml-convertant-ggml`: IQ2_XS decode (`dequantize_iq2_xs`, `IQ2_XS_BLOCK_BYTES`, `QK_IQ2_XS`), bit-identical to llama.cpp `9d57ce456c`'s `dequantize_row_iq2_xs` on 256 random blocks covering all 512 grid points and all 128 sign patterns. Decode only. `iq2xs_grid` vendored in `iq_tables.rs` (licence and pin in `THIRD-PARTY-NOTICES.md`); CI regenerates and diffs it and reproduces the vector.
+
 ## [0.1.41]
 
 ### Added
