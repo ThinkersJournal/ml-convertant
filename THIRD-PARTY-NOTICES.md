@@ -56,6 +56,10 @@
   `__init__`, the `pack` method's packing order, `zeros -= 1` on pack and `zeros + 1` masked on read).
   `ml-convertant-gptq` is our own implementation; no AutoGPTQ source is copied. Its tests re-implement `pack`
   independently as the check.
+- Test data, not committed: `tests/real_checkpoints.rs` reads a real GPTQ checkpoint from the local corpus
+  (`C:/Models/SmolLM2-360M-Instruct-GPTQ-gs64-asym`), which is Intel AutoRound's export in AutoGPTQ v1 format
+  (`fbaldassarri/HuggingFaceTB_SmolLM2-360M-Instruct-auto_gptq-int4-gs64-asym` at revision
+  `f3e7f293740f7b8c7b88858d4a879a90acf47b67`), against the dense `HuggingFaceTB/SmolLM2-360M-Instruct`. No weight bytes are copied into this repository.
 
 ## Fuel awq_repack output (own code, MIT OR Apache-2.0)
 

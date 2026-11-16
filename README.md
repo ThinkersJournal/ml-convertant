@@ -42,7 +42,7 @@ Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
 
 **Calibrate verification limits:** `ml-convertant-calibrate` is checked against the LoRA crate's AWQ requantizer and hand-worked groups. **Not compared with a real AWQ checkpoint**; the scale search is re-derived from the paper, not compared with AutoAWQ's scales, and output error is measured, not bounded.
 
-**GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. **No real GPTQ checkpoint's bytes have been checked**; only 4-bit, and activation-order layers are refused by the AWQ conversion.
+**GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. One real GPTQ checkpoint (Intel AutoRound's AutoGPTQ-v1 export of SmolLM2-360M, gs64 asymmetric) is checked against dense weights by a corpus-gated test (correlation 0.986 to 0.996; zero offset and nibble order mutations fail); **no checkpoint from AutoGPTQ itself, and no act-order layer, has been checked**; only 4-bit, and activation-order layers are refused by the AWQ conversion.
 
 **AWQ verification limits:** `ml-convertant-awq` is checked against Fuel's repack output and AutoAWQ's
 documented layout on seeded random layers. **No real AWQ checkpoint's bytes have been checked.**
