@@ -30,12 +30,15 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 | `ml-convertant-nf4` | NF4 encode/decode and double quantization, byte-exact vs real bitsandbytes output (0.1.5) |
 | `ml-convertant-awq` | AWQ unpack/pack/repack, lossless, identical to Fuel's repack (0.1.6) |
 | `ml-convertant-gptq` | GPTQ (AutoGPTQ v1, 4-bit) unpack/pack/dequantize and conversion to the AWQ layout, lossless (unreleased) |
+| `ml-convertant-calibrate` | Round-to-nearest quantization into the AWQ layout with weight and output error reports (scale search to follow; unreleased) |
 | `ml-convertant-kquants` | Q2_K to Q6_K, bit-exact vs ggml (0.1.13) |
 | `ml-convertant-mlmf` | GGUF or safetensors in, GGUF out: convert selected tensors with measured error |
 | `ml-convertant-lora` | Offline LoRA merge with a proven error bound, into f32, a quantized, NF4 or AWQ base, with adjustable strength |
 | `ml-convertant-names` | LoRA adapter tensor names, PEFT <-> GGUF, both directions; unmeasured names refused (unreleased) |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
+
+**Calibrate verification limits:** `ml-convertant-calibrate` is checked against the LoRA crate's AWQ requantizer and hand-worked groups. **Not compared with a real AWQ checkpoint**; round-to-nearest only so far, and output error is measured, not bounded.
 
 **GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. **No real GPTQ checkpoint's bytes have been checked**; only 4-bit, and activation-order layers are refused by the AWQ conversion.
 

@@ -74,6 +74,10 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     same one the AWQ crate does); no quantization step, no calibration, no training, and no multiplier or dot product on quantized vectors,
     so H1/H2 are as read in the per-crate section and H8 needs training. The GPTQ algorithm itself (the Hessian-based quantizer) is not
     implemented. Not a search result, not legal advice.
+17. Round-to-nearest AWQ-layout quantization with an output-error measurement (`ml-convertant-calibrate`, RTN release): per-group min/max
+    scale and zero point, then a matrix product `X W^T` to report the error. **Read 2026-11-15 against what is already on file, with no new
+    search run** (the calibration re-sweep, W6 and W7, was thin). No histogram, tail discard, moving-average maximum or power-of-two
+    clipping (H9), no training (H8), no kernel: the product runs only to measure error and ships no inference path. Not a search result, not legal advice.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 

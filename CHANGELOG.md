@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.31]
+
+### Added
+- `ml-convertant-calibrate` (new): `rtn_awq`, round-to-nearest quantization of `[OC, IC]` weights into the AWQ layout, with a weight `ErrorReport` carrying a proven per-group bound and, given a `CalibrationSet`, a measured output-error report. Bit-identical to the LoRA AWQ requantizer on shared inputs. The AWQ-style scale search is the next release. Re-exported by the facade as `calibrate`.
+- `docs/PATENT-SWEEP.md`: idea 17, read on file, no new search.
+
 ## [0.1.30]
 
 ### Changed
