@@ -2,14 +2,16 @@
 
 State 2026-11-16. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2, one cargo build at a time.
 
-**On main (0.1.37 after #39; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0, IQ4_NL, IQ4_XS), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
+**On main (0.1.37 after #39, a4d9b2b; 0.1.24 published and tagged by the PM):** core, ggml (Q8_0, Q4_0, IQ4_NL, IQ4_XS), kquants (Q2_K..Q6_K), nf4, awq, gptq (AutoGPTQ v1 4-bit, GPTQ to AWQ
 layout), calibrate (RTN and search_awq), lora (merge into f32 / ggml / NF4 / AWQ bases), mlmf glue (GGUF or safetensors in, GGUF out), names; CI differential vs llama.cpp;
 `docs/PATENT-SWEEP.md`, `docs/IQ-DESIGN.md`, `docs/IQ-PATENT-SEARCH-2026-11-16.md` (board 307 ruled C: no integer dot kernel here). Rows 1 to 17 done.
 
-**In flight, row 18 (IQ* formats, converters only):** IQ3_S PR on branch `iq3-s`, worktree `ml-convertant-wt-iq3s`, 0.1.38 proposed (PM allocates); byte-identical to ggml `quantize_iq3_s` except blocks with an exactly-zero
-sub-block followed by a non-zero one (ggml bug, we place sub-blocks correctly; PM ruled keep). Upstream issue DRAFT in `docs/upstream/ISSUE-ggml-iq3s-zero-subblock.md`; PM files it (outbound-issue ledger) and tells the bot
-account's answer path; when a maintainer replies, answer (CireSnave: answer maintainers we open issues with). `iq3s_grid` vendored via `tools/golden/gen_iq3s_grid.py`, CI diffs it. After it merges, row 18 is done
-unless the PM adds IQ2_*/IQ3_XXS (not scheduled).
+**In flight, row 18 (IQ* formats, converters only):** IQ3_S is PR #40 (branch `iq3-s`, worktree `ml-convertant-wt-iq3s`, 0.1.38 allocated by the PM, gated; all CI green at 4368020).
+Byte-identical to ggml `quantize_iq3_s` except blocks with an exactly-zero sub-block followed by a non-zero one (a ggml bug; PM ruled keep our correct placement). Upstream issue filed by the PM as
+ggml-org/llama.cpp#32401 (draft: `docs/upstream/ISSUE-ggml-iq3s-zero-subblock.md`); PM relays maintainer replies and I answer them (CireSnave: answer maintainers we open issues with).
+**WAITS (check yourself, do not wait for mail):** (1) `gh pr view 40 --json state`: when MERGED, remove worktree `ml-convertant-wt-iq3s` (`git status --porcelain` first), `git worktree prune`, delete local branch `iq3-s`,
+`gh api -X DELETE repos/ThinkersJournal/ml-convertant/git/refs/heads/iq3-s` then verify ABSENT with a `main` control, fast-forward the primary; (2) a maintainer reply on llama.cpp#32401 arrives via the PM.
+After #40 merges row 18 is done (ROADMAP row text still says "IQ3_S in review": update it then); IQ2_*/IQ3_XXS are not scheduled. Then: weekly patent sweep (due ~2026-11-19), and the next unblocked ROADMAP row.
 Fuel's targets: Iq4Nl/Iq4Xs/Iq3S in GGUF on-disk layout.
 **RELEASE GATE: no published version ships IQ* until the CPC/assignee patent database search is done (routed by the PM, not reported finished) or CireSnave decides.**
 US12524655B2 (STMicro, lattice VQ) read clear for fixed grids; CONDITION: never build an activation-approximating optimizer with a lattice-distance regularizer.
