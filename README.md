@@ -26,7 +26,7 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 | crate | status |
 |---|---|
 | `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.1) |
-| `ml-convertant-ggml` | Q8_0, Q4_0 and IQ4_NL (importance vector optional), bit-exact vs llama.cpp `9d57ce456c` (IQ4_NL unreleased: patent gate, see `docs/PATENT-SWEEP.md`) |
+| `ml-convertant-ggml` | Q8_0, Q4_0, IQ4_NL and IQ4_XS (importance vector optional), bit-exact vs llama.cpp `9d57ce456c` (IQ4_NL and IQ4_XS unreleased: patent gate, see `docs/PATENT-SWEEP.md`) |
 | `ml-convertant-nf4` | NF4 encode/decode and double quantization, byte-exact vs real bitsandbytes output (0.1.5) |
 | `ml-convertant-awq` | AWQ unpack/pack/repack, lossless, identical to Fuel's repack (0.1.6) |
 | `ml-convertant-gptq` | GPTQ (AutoGPTQ v1, 4-bit) unpack/pack/dequantize and conversion to the AWQ layout, lossless (unreleased) |

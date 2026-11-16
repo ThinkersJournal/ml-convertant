@@ -91,6 +91,18 @@
   (every one of the sixteen nibble values occurs in them, so every table entry is exercised), and the CI differential on random data.
   The vectors were produced with gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`) on Ubuntu 24.04.
 
+## ggml IQ4_XS (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `quantize_iq4_xs`, `quantize_row_iq4_nl_impl` with `QK_K` blocks, `dequantize_row_iq4_xs`;
+  `ggml/src/ggml-common.h`: `block_iq4_xs`). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`. The sixteen-entry table is the one of the IQ4_NL section above.
+- What we use: the block layout and the encoder's algorithm. `ml-convertant-ggml`'s `iq4_xs.rs` is our own implementation; no ggml source file is in the crate.
+- Verification of our copy against the origin: the encoder and decoder are checked byte for byte by compiling ggml's own functions from that
+  commit (`tools/golden/iq4_xs_reference.c`) and comparing: committed vectors `crates/ml-convertant-ggml/tests/golden/iq4_xs*`
+  (all sixteen nibble values and both ends of the 6-bit scale range occur in them), and the CI differential on random data.
+  The vectors were produced with gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`) on Ubuntu 24.04.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`

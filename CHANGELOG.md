@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.37]
+
+### Added
+- `ml-convertant-ggml`: IQ4_XS (`quantize_iq4_xs`, `quantize_iq4_xs_weighted`, `dequantize_iq4_xs`, `Iq4Xs`, `IQ4_XS_BLOCK_BYTES`, `QK_IQ4_XS`): ggml's `quantize_iq4_xs` (256-element blocks of 136 bytes: f16 `d`, 6-bit sub-block scales, IQ4_NL's table; `ntry = 7`, optional importance vector) reproduced in f32, byte-identical to llama.cpp `9d57ce456c` on the committed vectors (with and without an importance vector, including sub-block scales that fall exactly half-way) and on five random seeds of 640000 values both ways locally; the CI differential gains `iq4_xs`. The report carries a proven per-element bound (IQ4_NL's per sub-block, with scale `d * l`); an overflowing scale is an error. `convert_file` gains `iq4_xs`. IQ3_S follows. **No published version ships IQ* until the CPC/assignee patent database search is done or CireSnave decides** (`docs/PATENT-SWEEP.md`).
+
 ## [0.1.36]
 
 ### Added
