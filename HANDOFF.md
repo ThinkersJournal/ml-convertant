@@ -10,6 +10,7 @@ State 2026-11-16. FULL SPEED (THROTTLE.md). Box-memory rule: CARGO_BUILD_JOBS=2,
 
 WAIT: PM merge of the IQ3_XXS PR #42 | check: gh pr list --repo ThinkersJournal/ml-convertant --head iq3-xxs --state merged --json number --jq length | wake: 2026-11-16T22:00:00Z
 WAIT: maintainer reply on llama.cpp#32401 | check: gh issue view 32401 --repo ggml-org/llama.cpp --json comments --jq '.comments|length' | wake: 2026-11-18T18:00:00Z
+WAIT: weekly check for a small public IQ2_XXS/IQ2_XS/IQ2_S GGUF (imatrix-IQ2 quant of any tiny model suffices; PM 2026-11-16); report in the sweep as 'random-block bit-identity to ggml 9d57ce456c only; no real IQ2_* file tested' until found | check: hf search IQ2_XXS / IQ2_XS / IQ2_S GGUF tiny models (hf_fs ls repos), then extend tests/real_iq_files.rs | wake: 2026-11-19T12:00:00Z
 WAIT: weekly patent re-sweep due | check: git log -1 --format=%cs -- docs/PATENT-SWEEP.md | wake: 2026-11-19T12:00:00Z
 
 **Facts worth keeping:** Q8_0..Q6_K, IQ4_NL, IQ4_XS, IQ3_S byte-identical to ggml's own code (llama.cpp `9d57ce456c`). NF4 reproduces a real bitsandbytes checkpoint.

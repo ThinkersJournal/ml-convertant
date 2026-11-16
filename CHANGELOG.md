@@ -7,7 +7,7 @@ second number.
 ## [0.1.43]
 
 ### Added
-- `ml-convertant-ggml`: IQ2_S decode (`dequantize_iq2_s`, `IQ2_S_BLOCK_BYTES`, `QK_IQ2_S`), bit-identical to llama.cpp `9d57ce456c`'s `dequantize_row_iq2_s` on 512 random blocks covering all 1024 grid points. Decode only. `iq2s_grid` vendored in `iq_tables.rs` (licence and pin in `THIRD-PARTY-NOTICES.md`); CI regenerates and diffs it and reproduces the vector. This completes the decode-only IQ2/IQ3 family (IQ3_XXS, IQ2_XXS, IQ2_XS, IQ2_S); IQ1_* is not scheduled.
+- `ml-convertant-ggml`: IQ2_S decode (`dequantize_iq2_s`, `IQ2_S_BLOCK_BYTES`, `QK_IQ2_S`), bit-identical to llama.cpp `9d57ce456c`'s `dequantize_row_iq2_s` on 512 random blocks covering all 1024 grid points. Decode only. `iq2s_grid` vendored in `iq_tables.rs` (licence and pin in `THIRD-PARTY-NOTICES.md`); CI regenerates and diffs it and reproduces the vector. This completes the decode-only IQ2/IQ3 family (IQ3_XXS, IQ2_XXS, IQ2_XS, IQ2_S); IQ1_* is not scheduled. Coverage: random-block bit-identity to ggml `9d57ce456c` only; no real IQ2_* file tested (none public found 2026-11-16, rechecked weekly).
 
 ## [0.1.42]
 
