@@ -9,6 +9,11 @@ second number.
 ### Added
 - `ml-convertant-ggml`: IQ4_NL (`quantize_iq4_nl`, `quantize_iq4_nl_weighted`, `dequantize_iq4_nl`, `iq4_nl_block_bound`, `Iq4Nl`, `Iq4Error`, `KVALUES_IQ4NL`): ggml's `quantize_iq4_nl` (the `llama-quantize` encoder, `ntry = 7`, optional importance vector) reproduced in f32, byte-identical to llama.cpp `9d57ce456c` on the committed vectors (with and without an importance vector) and in the CI differential on random data. The report carries a proven per-element bound; a block whose scale overflows f32 is an error. `convert_file` gains `iq4_nl` and an optional importance file. IQ4_XS and IQ3_S follow. **No published version ships IQ* until the patent family check and the CPC/assignee database search are done or CireSnave decides** (`docs/PATENT-SWEEP.md`).
 
+## [0.1.35]
+
+### Added
+- `docs/PATENT-SWEEP.md`: IQ* re-sweep recorded as THIN (three web queries W8 to W10, no patent database searched): ideas 19 to 21, hit H23 (US11348009B2, per-layer bit-width selection), and a named-unread list. `docs/IQ-DESIGN.md`: design note for ROADMAP row 18 (IQ4_NL, IQ4_XS, IQ3_S, GGUF on-disk layouts, no kernel).
+
 ## [0.1.34]
 
 ### Added
