@@ -24,6 +24,7 @@ for cname, cty, rname, rty, width, per in TABLES:
     n = int(m.group(1))
     vals = [int(v, 0) for v in re.findall(r'0x[0-9a-fA-F]+|\d+', m.group(2))]
     assert len(vals) == n, (cname, len(vals), n)
+    lines.append('#[rustfmt::skip]')
     lines.append('pub(crate) const %s: [%s; %d] = [' % (rname, rty, n))
     for i in range(0, n, per):
         lines.append('    ' + ', '.join(('0x%0' + str(width) + 'x') % v for v in vals[i:i + per]) + ',')

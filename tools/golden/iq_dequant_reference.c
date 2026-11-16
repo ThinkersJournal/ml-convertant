@@ -4,12 +4,22 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <io.h>
+#define OPEN _open
+#define MODE (_S_IREAD | _S_IWRITE)
+#define BIN _O_BINARY
+#else
 #include <unistd.h>
+#define OPEN open
+#define MODE (S_IRUSR | S_IWUSR)
+#define BIN 0
+#endif
 #include "ggml-quants.h"
 #include "ggml-impl.h"
 /* Output files are created owner-only (0600), never world-writable. */
 static FILE*create(const char*path){
-  int fd=open(path,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+  int fd=OPEN(path,O_WRONLY|O_CREAT|O_TRUNC|BIN,MODE);
   return fd<0?NULL:fdopen(fd,"wb");}
 void ggml_abort(const char*f,int l,const char*fmt,...){fprintf(stderr,"abort %s:%d\n",f,l);exit(2);}
 /* usage: iq_dequant_reference <format> blocks.bin out.f32
