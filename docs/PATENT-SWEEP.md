@@ -78,6 +78,10 @@ Planned, not shipped (swept again when built; the inherited leads are recorded b
     scale and zero point, then a matrix product `X W^T` to report the error. **Read 2026-11-15 against what is already on file, with no new
     search run** (the calibration re-sweep, W6 and W7, was thin). No histogram, tail discard, moving-average maximum or power-of-two
     clipping (H9), no training (H8), no kernel: the product runs only to measure error and ships no inference path. Not a search result, not legal advice.
+18. AWQ-style scale search (`search_awq`): a per-input-channel scale from the mean absolute activation raised to an exponent on a fixed grid,
+    chosen by least output error on calibration activations. **Read 2026-11-16 against what is already on file, with no new search run**
+    (the calibration re-sweep was thin). Forward-only grid search: no training or gradient step (H8), no histogram, tail discard,
+    moving-average maximum or power-of-two clipping (H9), no kernel. Not a search result, not legal advice.
 
 ## Source status (what was tried on 2026-10-25 and 26, and what happened)
 

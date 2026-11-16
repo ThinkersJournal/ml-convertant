@@ -172,3 +172,226 @@ fn bad_inputs_are_refused() {
         CalibrateError::NonFinite { index: 1 }
     );
 }
+
+/// Activations with one very large channel and the rest around 1, which is where the search should help.
+fn outlier_activations(n: usize, ic: usize, hot: usize) -> CalibrationSet {
+    let mut x = noise(n * ic, 17);
+    for row in x.chunks_exact_mut(ic) {
+        row[hot] *= 40.0;
+    }
+    CalibrationSet::new(ic, x).unwrap()
+}
+
+/// `X W^T` measured independently of the crate: effective weights from the layer and its channel scales.
+fn effective_weights(s: &Searched) -> Vec<f32> {
+    let deq = dequantize_logical(&s.awq).unwrap();
+    let (ic, oc) = (s.awq.ic, s.awq.oc);
+    let mut w = vec![0.0f32; oc * ic];
+    for i in 0..ic {
+        for o in 0..oc {
+            w[o * ic + i] = deq[i * oc + o] / s.channel_scales[i];
+        }
+    }
+    w
+}
+
+#[test]
+fn search_beats_rtn_when_one_channel_dominates() {
+    let (oc, ic, gs) = (16, 64, 32);
+    let w = noise(oc * ic, 31);
+    let x = outlier_activations(32, ic, 5);
+    let s = search_awq(
+        &w,
+        oc,
+        ic,
+        &x,
+        &AwqSearch {
+            group_size: gs,
+            grid: 20,
+        },
+    )
+    .unwrap();
+    assert!(s.alpha > 0.0, "alpha = {}", s.alpha);
+    assert!(
+        s.output_report.rmse < s.baseline_output_report.rmse,
+        "{} vs {}",
+        s.output_report.rmse,
+        s.baseline_output_report.rmse
+    );
+}
+
+#[test]
+fn search_is_never_worse_than_rtn() {
+    let (oc, ic, gs) = (8, 32, 16);
+    for seed in 1..6u32 {
+        let w = noise(oc * ic, seed);
+        let x = CalibrationSet::new(ic, noise(10 * ic, seed + 100)).unwrap();
+        let s = search_awq(
+            &w,
+            oc,
+            ic,
+            &x,
+            &AwqSearch {
+                group_size: gs,
+                grid: 20,
+            },
+        )
+        .unwrap();
+        let rtn = rtn_awq(&w, oc, ic, gs, Some(&x)).unwrap();
+        assert_eq!(s.baseline_output_report, rtn.output_report.unwrap());
+        assert!(s.output_report.rmse <= s.baseline_output_report.rmse);
+    }
+}
+
+#[test]
+fn a_grid_of_one_is_round_to_nearest() {
+    let (oc, ic, gs) = (8, 32, 16);
+    let w = noise(oc * ic, 4);
+    let x = outlier_activations(8, ic, 2);
+    let s = search_awq(
+        &w,
+        oc,
+        ic,
+        &x,
+        &AwqSearch {
+            group_size: gs,
+            grid: 1,
+        },
+    )
+    .unwrap();
+    let rtn = rtn_awq(&w, oc, ic, gs, Some(&x)).unwrap();
+    assert_eq!(s.alpha, 0.0);
+    assert!(s.channel_scales.iter().all(|&v| v == 1.0));
+    assert_eq!(s.awq, rtn.awq);
+    // Same measured error; the search's bound adds slack for dividing by the channel scales, so it is looser.
+    assert_eq!(
+        (s.report.max_abs, s.report.rmse, s.report.mean_abs),
+        (rtn.report.max_abs, rtn.report.rmse, rtn.report.mean_abs)
+    );
+    assert!(s.report.bound >= rtn.report.bound);
+}
+
+#[test]
+fn search_reports_match_an_independent_measurement_and_the_bound_holds() {
+    let (oc, ic, gs) = (16, 64, 32);
+    let w = noise(oc * ic, 8);
+    let x = outlier_activations(16, ic, 9);
+    let s = search_awq(
+        &w,
+        oc,
+        ic,
+        &x,
+        &AwqSearch {
+            group_size: gs,
+            grid: 20,
+        },
+    )
+    .unwrap();
+    let eff = effective_weights(&s);
+    assert_eq!(s.report.within_bound(), Some(true));
+    assert_eq!(
+        ErrorReport::measure(&w, &eff).unwrap().max_abs,
+        s.report.max_abs
+    );
+    // (x / s)(W s)^T against x W^T, computed here without the crate's projection.
+    let deq = dequantize_logical(&s.awq).unwrap();
+    let mut worst = 0.0f64;
+    for row in x.samples().chunks_exact(ic) {
+        for o in 0..oc {
+            let exact: f64 = (0..ic)
+                .map(|i| f64::from(row[i]) * f64::from(w[o * ic + i]))
+                .sum();
+            let got: f64 = (0..ic)
+                .map(|i| f64::from(row[i] / s.channel_scales[i]) * f64::from(deq[i * oc + o]))
+                .sum();
+            worst = worst.max((exact - got).abs());
+        }
+    }
+    assert!(
+        (worst - s.output_report.max_abs).abs() < 1e-3 * (1.0 + worst),
+        "{worst} vs {}",
+        s.output_report.max_abs
+    );
+}
+
+#[test]
+fn search_is_deterministic() {
+    let (oc, ic, gs) = (8, 32, 16);
+    let w = noise(oc * ic, 6);
+    let x = outlier_activations(8, ic, 1);
+    let cfg = AwqSearch {
+        group_size: gs,
+        grid: 20,
+    };
+    assert_eq!(
+        search_awq(&w, oc, ic, &x, &cfg),
+        search_awq(&w, oc, ic, &x, &cfg)
+    );
+}
+
+#[test]
+fn search_refuses_bad_inputs() {
+    let w = noise(64, 1);
+    let x = CalibrationSet::new(8, noise(16, 2)).unwrap();
+    let ok = AwqSearch {
+        group_size: 8,
+        grid: 4,
+    };
+    assert!(search_awq(&w, 8, 8, &x, &ok).is_ok());
+    assert!(matches!(
+        search_awq(
+            &w,
+            8,
+            8,
+            &x,
+            &AwqSearch {
+                grid: 0,
+                ..ok.clone()
+            }
+        ),
+        Err(CalibrateError::BadDim { .. })
+    ));
+    assert!(matches!(
+        search_awq(
+            &w,
+            8,
+            8,
+            &CalibrationSet::new(4, vec![1.0; 8]).unwrap(),
+            &ok
+        ),
+        Err(CalibrateError::BadLen { .. })
+    ));
+    assert_eq!(
+        search_awq(
+            &w,
+            8,
+            8,
+            &x,
+            &AwqSearch {
+                group_size: 0,
+                grid: 4
+            }
+        )
+        .unwrap_err(),
+        CalibrateError::BadGroupSize(0)
+    );
+}
+
+#[test]
+fn ties_go_to_the_smaller_alpha() {
+    // Zero weights give zero error at every alpha, so the first (alpha 0) must win.
+    let x = outlier_activations(4, 16, 3);
+    let s = search_awq(
+        &[0.0; 128],
+        8,
+        16,
+        &x,
+        &AwqSearch {
+            group_size: 8,
+            grid: 20,
+        },
+    )
+    .unwrap();
+    assert_eq!(s.alpha, 0.0);
+    assert!(s.channel_scales.iter().all(|&v| v == 1.0));
+}
