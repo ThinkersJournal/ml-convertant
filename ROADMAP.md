@@ -27,7 +27,7 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-11-14.
 | 15 | NF4/AWQ bases for merge-into-quantized (`merge_lora_into_nf4`, `merge_lora_into_awq`) | done |
 | 16 | GPTQ: `ml-convertant-gptq` (unpack/pack/dequantize, GPTQ to AWQ layout; Marlin stays in baracuda; merged #31) | done |
 | 17 | Calibration: `ml-convertant-calibrate`, RTN baseline then AWQ-style scale search (`docs/CALIBRATION-DESIGN.md`; PM [TASK] 2026-11-15) | done (RTN #33, search #34; real-checkpoint tests #35, #36) |
-| 18 | IQ* formats: `IQ4_NL`, `IQ4_XS`, `IQ3_S` encoders, bit-exact vs ggml (`docs/IQ-DESIGN.md`; PM go 2026-11-16, converters only) | sweep and design merged; IQ4_NL merged; IQ4_XS merged; IQ3_S merged (#40); real-file decode check vs ggml and Fuel merged (#41); IQ3_XXS decode in review (#42); IQ2_XXS decode in review (#43); IQ2_XS decode in review (#44); IQ2_S decode in review; real-file checks next |
+| 18 | IQ* formats: `IQ4_NL`, `IQ4_XS`, `IQ3_S` encoders and `IQ3_XXS`, `IQ2_XXS`, `IQ2_XS`, `IQ2_S` decoders, bit-exact vs ggml (`docs/IQ-DESIGN.md`; PM go 2026-11-16, converters only) | sweep and design merged; IQ4_NL merged; IQ4_XS merged; IQ3_S merged (#40); real-file decode check vs ggml and Fuel merged (#41); IQ3_XXS, IQ2_XXS, IQ2_XS, IQ2_S decode merged (#45, one PR; random-block bit-identity to ggml); real IQ3_XXS file checked vs ggml and Fuel (0.1.44); NO real IQ2_* file tested (rechecked weekly); IQ1_* not scheduled |
 
 **First release done:** 0.1.24 published and tagged v0.1.24 by the PM (board 307 ruled C, 2026-11-01). Both 421 rulings are implemented.
 
