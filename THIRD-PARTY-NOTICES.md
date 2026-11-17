@@ -186,3 +186,8 @@ Dev-dependencies of `ml-convertant-nf4` tests (`mlmf-bnb`, `mlmf-core`, `mlmf-sa
 
 Each future entry must give origin (URL + commit), licence, what we copied or derived, and which
 files use it. See `docs/DESIGN.md` §5.
+
+## Real IQ3_XXS file used by `tests/real_iq_files.rs` (not vendored)
+
+`smollm2-135m-instruct-iq3_xxs-imat.gguf` from Hugging Face `nns-hashtags/SmolLM2-135M-Instruct-IQ3_XXS-GGUF`, a quantization of `HuggingFaceTB/SmolLM2-135M-Instruct` (Apache-2.0). 86958272 bytes, sha256 `603a9e08e15295c0b1ed1501df1da261fd211b46ac0a50a9cdd029356d1c9794`. Read from the local corpus only; no weight bytes are copied into this repository, only per-tensor SHA-256 digests of ggml's decode (`tests/golden/real_iq_dequant.tsv`).
+

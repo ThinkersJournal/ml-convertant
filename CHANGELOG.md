@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.44]
+
+### Added
+- Test only, no API change: `tests/real_iq_files.rs` now also decodes a real IQ3_XXS GGUF (SmolLM2-135M-Instruct imatrix IQ3_XXS, Apache-2.0, 86958272 bytes, sha256 `603a9e08e15295c0b1ed1501df1da261fd211b46ac0a50a9cdd029356d1c9794`): 30 IQ3_XXS and 180 IQ4_NL tensors, each bit-identical to llama.cpp `9d57ce456c`'s dequantize and to Fuel's `to_float` (fuel-quantized 0.47.32). Corpus-gated (local only, SKIPPED on hosted CI). No real IQ2_XXS / IQ2_XS / IQ2_S file is tested: those remain random-block bit-identity to ggml only.
+- `tools/golden/gen_real_iq_dequant.py` / `gguf_dequant_reference.c` handle ggml type 18; the golden TSV file column is now a path under `gguf-corpus`.
+
 ## [0.1.43]
 
 ### Added
