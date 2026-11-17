@@ -191,3 +191,6 @@ files use it. See `docs/DESIGN.md` §5.
 
 `smollm2-135m-instruct-iq3_xxs-imat.gguf` from Hugging Face `nns-hashtags/SmolLM2-135M-Instruct-IQ3_XXS-GGUF`, a quantization of `HuggingFaceTB/SmolLM2-135M-Instruct` (Apache-2.0). 86958272 bytes, sha256 `603a9e08e15295c0b1ed1501df1da261fd211b46ac0a50a9cdd029356d1c9794`. Read from the local corpus only; no weight bytes are copied into this repository, only per-tensor SHA-256 digests of ggml's decode (`tests/golden/real_iq_dequant.tsv`).
 
+## Safetensors checkpoints used by `tests/real_checkpoints.rs` (not vendored)
+
+Pinned by size and SHA-256 in `tests/golden/real_checkpoints.tsv`; read from the local corpus only, no weight bytes are copied into this repository. `Orion-zhen/Qwen3-0.6B-AWQ` at `9f607bee5fca19cba0bd2b383ba804c89385ea18` (GPL-3.0, quantization of `Qwen/Qwen3-0.6B`); `Qwen/Qwen3-0.6B` at `c1899de289a04d12100db370d81485cdf75e47ca` (Apache-2.0); `HuggingFaceTB/SmolLM2-360M-Instruct` (Apache-2.0; local copy has no recorded revision, so only its hash identifies it); `fbaldassarri/HuggingFaceTB_SmolLM2-360M-Instruct-auto_gptq-int4-gs64-asym` at `f3e7f293740f7b8c7b88858d4a879a90acf47b67` (Apache-2.0).

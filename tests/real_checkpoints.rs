@@ -37,6 +37,44 @@ fn skipped(what: &str) {
     eprintln!("SKIPPED: {what}");
 }
 
+/// Every checkpoint is pinned by size and SHA-256 in `tests/golden/real_checkpoints.tsv` (dir, size, sha256, licence,
+/// source@revision), so a swapped or corrupted file fails instead of passing silently. Hashed once per directory.
+fn verify_pinned(dir: &str) {
+    use sha2::{Digest, Sha256};
+    use std::sync::{Mutex, OnceLock};
+    static DONE: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
+    let done = DONE.get_or_init(|| Mutex::new(Vec::new()));
+    let mut done = done.lock().unwrap();
+    if done.iter().any(|d| d == dir) {
+        return;
+    }
+    let row = include_str!("golden/real_checkpoints.tsv")
+        .lines()
+        .map(|l| l.split('\t').collect::<Vec<_>>())
+        .find(|f| f[0] == dir)
+        .unwrap_or_else(|| panic!("{dir} is not in tests/golden/real_checkpoints.tsv"));
+    let path = models_dir().join(dir).join("model.safetensors");
+    let mut f = File::open(&path).unwrap();
+    let size = f.metadata().unwrap().len();
+    assert_eq!(size.to_string(), row[1], "{dir}: size differs from the pin");
+    let mut h = Sha256::new();
+    let mut buf = vec![0u8; 1 << 20];
+    loop {
+        let n = f.read(&mut buf).unwrap();
+        if n == 0 {
+            break;
+        }
+        h.update(&buf[..n]);
+    }
+    let got: String = h.finalize().iter().map(|b| format!("{b:02x}")).collect();
+    assert_eq!(
+        got, row[2],
+        "{dir}: sha256 differs from the pin ({})",
+        row[4]
+    );
+    done.push(dir.to_string());
+}
+
 struct Safetensors {
     file: File,
     base: u64,
@@ -46,6 +84,7 @@ struct Safetensors {
 impl Safetensors {
     fn open(dir: &str) -> Option<Self> {
         let mut file = File::open(models_dir().join(dir).join("model.safetensors")).ok()?;
+        verify_pinned(dir);
         let mut n = [0u8; 8];
         file.read_exact(&mut n).ok()?;
         let n = u64::from_le_bytes(n);
