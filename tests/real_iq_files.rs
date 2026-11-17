@@ -1,7 +1,8 @@
 //! Real-file checks for IQ4_NL, IQ4_XS, IQ3_S and IQ3_XXS: our decode against llama.cpp's own, and against Fuel's.
 //!
 //! Corpus-gated: the GGUF files live in `C:/Models` (override with `MLCONV_MODELS_DIR`) and are absent on
-//! hosted CI, so the test prints `SKIPPED` and returns rather than failing.
+//! hosted CI, so the test prints `SKIPPED` and returns rather than failing
+//! (unless `MLCONV_REQUIRE_CORPUS` is set, as in `.github/workflows/corpus.yml`, where a missing file fails).
 //!
 //! REAL: every IQ4_NL / IQ4_XS / IQ3_S / IQ3_XXS tensor (630 of them) of three published SmolLM2-135M-Instruct
 //! GGUFs: the IQ3_XS file (IQ3_S + IQ4_NL), the IQ4_XS file (IQ4_XS + IQ4_NL) and an imatrix IQ3_XXS file
@@ -30,6 +31,15 @@ use std::path::PathBuf;
 
 fn models_dir() -> PathBuf {
     std::env::var_os("MLCONV_MODELS_DIR").map_or_else(|| PathBuf::from("C:/Models"), PathBuf::from)
+}
+
+/// With `MLCONV_REQUIRE_CORPUS` set (the self-hosted corpus job), a missing file is a failure, not a skip.
+fn skipped(what: &str) {
+    assert!(
+        std::env::var_os("MLCONV_REQUIRE_CORPUS").is_none(),
+        "corpus required but missing: {what}"
+    );
+    eprintln!("SKIPPED: {what}");
 }
 
 struct Cur<'a>(&'a [u8], usize);
@@ -148,7 +158,7 @@ fn iq_decode_matches_ggml_and_fuel_on_real_gguf() {
     for file in files {
         let path = models_dir().join("gguf-corpus").join(file);
         let Ok(bytes) = std::fs::read(&path) else {
-            eprintln!("SKIPPED: {} not present", path.display());
+            skipped(&format!("{} not present", path.display()));
             return;
         };
         let want_file = &golden.iter().find(|(k, _)| k.0 == file).unwrap().1.0;

@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.45]
+
+### Added
+- `tests/real_checkpoints.rs` now pins each of its four safetensors checkpoints by size and SHA-256 (`tests/golden/real_checkpoints.tsv`, with licence and source@revision), so a swapped or corrupted file fails.
+- `.github/workflows/corpus.yml`: runs the corpus-gated real-file tests on a self-hosted runner labelled `corpus` (push to main or a maintainer `workflow_dispatch` naming a SHA; no PR trigger). `MLCONV_REQUIRE_CORPUS=1` makes a missing file a failure instead of SKIPPED.
+
 ## [0.1.44]
 
 ### Added
