@@ -1,0 +1,61 @@
+name: Corpus
+
+# Real-file tests that need model files hosted CI does not have (tests/real_iq_files.rs, tests/real_checkpoints.rs).
+# Runs on the self-hosted, repo-scoped runner labelled `corpus` (EXPECTATIONS 5.1g/5.1h). This repository is
+# public, so: NO pull_request / pull_request_target trigger, no secrets, read-only token. A PR's corpus run is a
+# maintainer's workflow_dispatch that names the exact reviewed SHA.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Exact commit SHA to test (the reviewed head of a PR, or main)
+        required: true
+        type: string
+
+concurrency:
+  group: corpus
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  MLCONV_MODELS_DIR: C:/Models
+  # A missing or wrong-hash file is a failure, never a SKIPPED pass.
+  MLCONV_REQUIRE_CORPUS: "1"
+
+jobs:
+  corpus:
+    runs-on: [self-hosted, corpus]
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@5059963b1731bf1580991b5f3b1eecfb5da406c0 # 1.98.0 (branch)
+      - name: Corpus files are present
+        run: |
+          for f in \
+            gguf-corpus/quants/SmolLM2-135M-Instruct-IQ3_XS.gguf \
+            gguf-corpus/quants/SmolLM2-135M-Instruct-IQ4_XS.gguf \
+            gguf-corpus/iq-extra/smollm2-135m-instruct-iq3_xxs-imat.gguf \
+            Qwen3-0.6B-AWQ/model.safetensors Qwen3-0.6B-dense/model.safetensors \
+            SmolLM2-360M-Instruct/model.safetensors SmolLM2-360M-Instruct-GPTQ-gs64-asym/model.safetensors; do
+            test -f "$MLCONV_MODELS_DIR/$f" || { echo "::error::missing $MLCONV_MODELS_DIR/$f"; exit 1; }
+          done
+      - name: Real-file tests
+        run: |
+          set -o pipefail
+          cargo test --locked --release --test real_iq_files --test real_checkpoints -- --nocapture 2>&1 | tee corpus.log
+      - name: No test was skipped
+        run: |
+          if grep -n SKIPPED corpus.log; then echo "::error::a corpus test was skipped"; exit 1; fi
+          grep -c "^test .* ok$" corpus.log

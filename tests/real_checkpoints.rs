@@ -1,7 +1,8 @@
 //! Real-checkpoint checks for the AWQ, GPTQ and calibration crates.
 //!
 //! Corpus-gated: the models live in `C:/Models` (override with `MLCONV_MODELS_DIR`) and are absent on
-//! hosted CI, so each test prints `SKIPPED` and returns rather than failing.
+//! hosted CI, so each test prints `SKIPPED` and returns rather than failing
+//! (unless `MLCONV_REQUIRE_CORPUS` is set, as in `.github/workflows/corpus.yml`, where a missing file fails).
 //!
 //! What is REAL and what is SYNTHETIC, per test:
 //! - `awq_real_checkpoint`: real AutoAWQ output (Qwen3-0.6B-AWQ, every projection of every layer).
@@ -25,6 +26,15 @@ use std::path::PathBuf;
 
 fn models_dir() -> PathBuf {
     std::env::var_os("MLCONV_MODELS_DIR").map_or_else(|| PathBuf::from("C:/Models"), PathBuf::from)
+}
+
+/// With `MLCONV_REQUIRE_CORPUS` set (the self-hosted corpus job), a missing file is a failure, not a skip.
+fn skipped(what: &str) {
+    assert!(
+        std::env::var_os("MLCONV_REQUIRE_CORPUS").is_none(),
+        "corpus required but missing: {what}"
+    );
+    eprintln!("SKIPPED: {what}");
 }
 
 struct Safetensors {
@@ -146,10 +156,10 @@ fn awq_layer(st: &mut Safetensors, prefix: &str) -> HfAwq {
 #[test]
 fn awq_real_checkpoint() {
     let Some(mut st) = Safetensors::open("Qwen3-0.6B-AWQ") else {
-        println!(
-            "SKIPPED: Qwen3-0.6B-AWQ not under {}",
+        skipped(&format!(
+            "Qwen3-0.6B-AWQ not under {}",
             models_dir().display()
-        );
+        ));
         return;
     };
     let mut layers = 0usize;
@@ -233,10 +243,10 @@ fn awq_real_checkpoint() {
 #[test]
 fn gptq_container_on_real_awq_codes() {
     let Some(mut st) = Safetensors::open("Qwen3-0.6B-AWQ") else {
-        println!(
-            "SKIPPED: Qwen3-0.6B-AWQ not under {}",
+        skipped(&format!(
+            "Qwen3-0.6B-AWQ not under {}",
             models_dir().display()
-        );
+        ));
         return;
     };
     let mut n = 0;
@@ -298,10 +308,10 @@ fn synthetic_activations(ic: usize, n: usize, seed: u64) -> CalibrationSet {
 #[test]
 fn calibrate_on_real_weights() {
     let Some(mut st) = Safetensors::open("SmolLM2-360M-Instruct") else {
-        println!(
-            "SKIPPED: SmolLM2-360M-Instruct not under {}",
+        skipped(&format!(
+            "SmolLM2-360M-Instruct not under {}",
             models_dir().display()
-        );
+        ));
         return;
     };
     let mut gains = Vec::new();
@@ -375,10 +385,10 @@ fn awq_pack_order_against_dense() {
         Safetensors::open("Qwen3-0.6B-AWQ"),
         Safetensors::open("Qwen3-0.6B-dense"),
     ) else {
-        println!(
-            "SKIPPED: Qwen3-0.6B-AWQ or Qwen3-0.6B-dense not under {}",
+        skipped(&format!(
+            "Qwen3-0.6B-AWQ or Qwen3-0.6B-dense not under {}",
             models_dir().display()
-        );
+        ));
         return;
     };
     let mut worst = 1.0f64;
@@ -439,10 +449,10 @@ fn gptq_real_checkpoint_against_dense() {
         Safetensors::open("SmolLM2-360M-Instruct-GPTQ-gs64-asym"),
         Safetensors::open("SmolLM2-360M-Instruct"),
     ) else {
-        println!(
-            "SKIPPED: SmolLM2-360M-Instruct-GPTQ-gs64-asym or SmolLM2-360M-Instruct not under {}",
+        skipped(&format!(
+            "SmolLM2-360M-Instruct-GPTQ-gs64-asym or SmolLM2-360M-Instruct not under {}",
             models_dir().display()
-        );
+        ));
         return;
     };
     let (mut worst_corr, mut worst_rel) = (1.0f64, 0.0f64);
