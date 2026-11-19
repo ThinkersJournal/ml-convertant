@@ -1,29 +1,30 @@
-//! Real-file checks for IQ4_NL, IQ4_XS, IQ3_S and IQ3_XXS: our decode against llama.cpp's own, and against Fuel's.
+//! Real-file checks for IQ4_NL, IQ4_XS, IQ3_S, IQ3_XXS and IQ2_XXS: our decode against llama.cpp's own, and against Fuel's.
 //!
 //! Corpus-gated: the GGUF files live in `C:/Models` (override with `MLCONV_MODELS_DIR`) and are absent on
 //! hosted CI, so the test prints `SKIPPED` and returns rather than failing
 //! (unless `MLCONV_REQUIRE_CORPUS` is set, as in `.github/workflows/corpus.yml`, where a missing file fails).
 //!
-//! REAL: every IQ4_NL / IQ4_XS / IQ3_S / IQ3_XXS tensor (630 of them) of three published SmolLM2-135M-Instruct
-//! GGUFs: the IQ3_XS file (IQ3_S + IQ4_NL), the IQ4_XS file (IQ4_XS + IQ4_NL) and an imatrix IQ3_XXS file
+//! REAL: every IQ4_NL / IQ4_XS / IQ3_S / IQ3_XXS / IQ2_XXS tensor (754 of them) of four published GGUFs. Three are
+//! SmolLM2-135M-Instruct: the IQ3_XS file (IQ3_S + IQ4_NL), the IQ4_XS file (IQ4_XS + IQ4_NL) and an imatrix IQ3_XXS file
 //! (IQ3_XXS + IQ4_NL; Apache-2.0, 86958272 bytes). Files are pinned by SHA-256 in `tests/golden/real_iq_dequant.tsv`.
-//! NO real IQ2_XXS / IQ2_XS / IQ2_S file is tested (none found publicly 2026-11-16): those are random-block
-//! bit-identity to ggml only.
+//! The fourth is a third-party IQ2_XXS GGUF (`Ffftdtd5dtft/Phi-3-mini-128k-instruct-IQ2_XXS-GGUF`, GGUF-my-repo conversion of
+//! microsoft/Phi-3-mini-128k-instruct, MIT, 1042936512 bytes, 124 IQ2_XXS tensors). NO real IQ2_XS / IQ2_S file is
+//! tested (none found publicly 2026-11-19): those are random-block bit-identity to ggml only.
 //! Two oracles, per tensor, compared bit for bit (f32 bit patterns):
 //! 1. ggml: the file's SHA-256 column is the hash of `dequantize_row_*` output from llama.cpp at
 //!    `9d57ce456c`, built by `tools/golden/gguf_dequant_reference.c` (regenerate with
 //!    `tools/golden/gen_real_iq_dequant.py`). Our decode must hash the same.
-//! 2. Fuel: `fuel-quantized` (crates.io, `GgmlType::to_float` on `BlockIq4Nl` / `BlockIq4Xs` / `BlockIq3S` / `BlockIq3Xxs`).
+//! 2. Fuel: `fuel-quantized` (crates.io, `GgmlType::to_float` on `BlockIq4Nl` / `BlockIq4Xs` / `BlockIq3S` / `BlockIq3Xxs` / `BlockIq2Xxs`).
 //!    Its iq4.rs / iq_grid_types.rs / iq_grids.rs at Fuel `origin/main` (0.49.3, unpublished) are
 //!    identical to the published 0.47.32 ignoring line endings, measured 2026-11-16.
 //!
 //! The GGUF parser here is the test's own (header + tensor table), independent of the generator's.
 
-use fuel_quantized::iq_grid_types::{BlockIq3S, BlockIq3Xxs};
+use fuel_quantized::iq_grid_types::{BlockIq2Xxs, BlockIq3S, BlockIq3Xxs};
 use fuel_quantized::iq4::{BlockIq4Nl, BlockIq4Xs};
 use fuel_quantized::k_quants::GgmlType;
 use ml_convertant_ggml::{
-    dequantize_iq3_s, dequantize_iq3_xxs, dequantize_iq4_nl, dequantize_iq4_xs,
+    dequantize_iq2_xxs, dequantize_iq3_s, dequantize_iq3_xxs, dequantize_iq4_nl, dequantize_iq4_xs,
 };
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
@@ -153,7 +154,7 @@ fn iq_decode_matches_ggml_and_fuel_on_real_gguf() {
     let mut files: Vec<&str> = golden.keys().map(|k| k.0.as_str()).collect();
     files.sort_unstable();
     files.dedup();
-    assert_eq!(files.len(), 3);
+    assert_eq!(files.len(), 4);
     let mut checked: HashMap<&str, usize> = HashMap::new();
     for file in files {
         let path = models_dir().join("gguf-corpus").join(file);
@@ -169,6 +170,7 @@ fn iq_decode_matches_ggml_and_fuel_on_real_gguf() {
         );
         for (name, ty, n, off) in gguf_tensors(&bytes) {
             let (kind, block, blk_bytes) = match ty {
+                16 => ("IQ2_XXS", 256, 66),
                 18 => ("IQ3_XXS", 256, 98),
                 20 => ("IQ4_NL", 32, 18),
                 21 => ("IQ3_S", 256, 110),
@@ -182,6 +184,10 @@ fn iq_decode_matches_ggml_and_fuel_on_real_gguf() {
                 .unwrap_or_else(|| panic!("{file} {name} missing from the golden file"));
             assert_eq!((gk.as_str(), *gn), (kind, n), "{file} {name}");
             let (ours, fuel) = match ty {
+                16 => (
+                    dequantize_iq2_xxs(raw).unwrap(),
+                    fuel_decode::<BlockIq2Xxs>(raw, n),
+                ),
                 18 => (
                     dequantize_iq3_xxs(raw).unwrap(),
                     fuel_decode::<BlockIq3Xxs>(raw, n),
@@ -217,5 +223,6 @@ fn iq_decode_matches_ggml_and_fuel_on_real_gguf() {
     assert_eq!(checked["IQ4_XS"], 30);
     assert_eq!(checked["IQ3_S"], 30);
     assert_eq!(checked["IQ3_XXS"], 30);
+    assert_eq!(checked["IQ2_XXS"], 124);
     eprintln!("checked {checked:?}");
 }

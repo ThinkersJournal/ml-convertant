@@ -194,3 +194,7 @@ files use it. See `docs/DESIGN.md` §5.
 ## Safetensors checkpoints used by `tests/real_checkpoints.rs` (not vendored)
 
 Pinned by size and SHA-256 in `tests/golden/real_checkpoints.tsv`; read from the local corpus only, no weight bytes are copied into this repository. `Orion-zhen/Qwen3-0.6B-AWQ` at `9f607bee5fca19cba0bd2b383ba804c89385ea18` (GPL-3.0, quantization of `Qwen/Qwen3-0.6B`); `Qwen/Qwen3-0.6B` at `c1899de289a04d12100db370d81485cdf75e47ca` (Apache-2.0); `HuggingFaceTB/SmolLM2-360M-Instruct` (Apache-2.0; local copy has no recorded revision, so only its hash identifies it); `fbaldassarri/HuggingFaceTB_SmolLM2-360M-Instruct-auto_gptq-int4-gs64-asym` at `f3e7f293740f7b8c7b88858d4a879a90acf47b67` (Apache-2.0).
+
+## Real IQ2_XXS file used by `tests/real_iq_files.rs` (not vendored)
+
+`phi-3-mini-128k-instruct-iq2_xxs-imat.gguf` from Hugging Face `Ffftdtd5dtft/Phi-3-mini-128k-instruct-IQ2_XXS-GGUF` at revision `6f9062cabf5c9efcf3db5e9788bf3558c13f84a0` (https://huggingface.co/Ffftdtd5dtft/Phi-3-mini-128k-instruct-IQ2_XXS-GGUF): a GGUF-my-repo (llama.cpp) conversion of `microsoft/Phi-3-mini-128k-instruct`, uploaded by a **third party, not Microsoft**; licence MIT per its model card (Phi-3 itself is MIT). 1042936512 bytes, sha256 `40404c1b8b92c9e7430f117b78273981ca876f4134992cea433b6e4034fbd36a` (matches Hugging Face's own LFS hash). 124 IQ2_XXS, 5 Q2_K, 1 Q5_K and 67 F32 tensors. Read from the local corpus only; never committed; only per-tensor SHA-256 digests of ggml's decode are kept (`tests/golden/real_iq_dequant.tsv`).
