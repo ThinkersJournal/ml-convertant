@@ -30,3 +30,9 @@ Positive control for "the goldens can fail": one byte of `iq4_nl.deq.f32` flippe
 
 Not audited: patent-sweep findings (a reading, not a claim about code), CI job behaviour (needs the forge), crates.io
 `ml-convertant` facade re-exports.
+
+## Standing UNVERIFIED list (pm-kernels 2026-11-19)
+
+1. Golden vectors regenerated from the pinned llama.cpp `9d57ce456c` (done by CI `differential` jobs and the local WSL harness, not re-run in this audit).
+2. CI job behaviour, including `corpus.yml` (the self-hosted runner is not registered, so that job has never run).
+3. AutoGPTQ's and AutoAWQ's own output (our checks are against dense weights and documented layouts, not their code).
