@@ -17,7 +17,7 @@ WAIT: weekly patent re-sweep due | check: git log -1 --format=%cs -- docs/PATENT
 
 **Facts worth keeping:** Q8_0..Q6_K, IQ4_NL, IQ4_XS, IQ3_S byte-identical to ggml's own code (llama.cpp `9d57ce456c`); IQ3_XXS/IQ2_* decode bit-identical on random blocks. NF4 reproduces a real bitsandbytes checkpoint.
 AWQ pack order checked against dense Qwen3-0.6B (not AutoAWQ code); GPTQ against one AutoRound-exported checkpoint (act-order unchecked); search_awq not checked against AutoAWQ or real activations. LoRA merge NOT compared
-with PEFT-merged weights. IQ4_NL, IQ4_XS, IQ3_S DECODE checked on 420 real tensors of two SmolLM2-135M IQ GGUFs vs ggml and vs Fuel's `to_float` (fuel-quantized 0.47.32; 0.49.x unpublished, IQ source identical); ENCODE on real weights unchecked. One version for every crate and path-dep minimum.
+with PEFT-merged weights. IQ4_NL, IQ4_XS, IQ3_S DECODE checked on 420 real tensors of two SmolLM2-135M IQ GGUFs vs ggml and vs Fuel's `to_float` (fuel-quantized 0.47.32; 0.49.x unpublished, IQ source identical); ENCODE (IQ4_NL, IQ4_XS, IQ3_S, no imatrix) byte-identical to ggml on 16 rows each of 16 real Qwen3-0.6B tensors (tests/real_iq_encode.rs; imatrix encode on real weights unchecked). One version for every crate and path-dep minimum.
 
 **Patent sweep:** calibration re-sweep (#32) and the IQ re-sweep (#37) were thin: web queries, no patent database. Re-read triggers in `docs/PATENT-SWEEP.md`. Google Patents throttles (use C:\Projects\tools\patent-claims.py). **Weekly sweep:** last 2026-11-19 (thin again: web queries only, H29 NXP and H30 Huawei read, nothing needs review); next due 2026-11-26. The CPC/assignee database search is still the open item.
 
