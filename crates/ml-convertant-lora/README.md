@@ -7,7 +7,7 @@ and rounded to f32, and carries a proven per-tensor bound.
 
 The formula is the one PEFT documents (`peft/tuners/lora/layer.py`, huggingface/peft `7d6315ae9`,
 Apache-2.0); no PEFT source is copied. **Verified** against hand-computed cases and the f64 reference;
-**not** compared against merged weights produced by PEFT itself.
+and against weights merged by PEFT 0.22.0 itself (`tests/peft_merge.rs`: Qwen3-0.6B layer-0 `v_proj`, first 32 rows, standard and rsLoRA; synthetic adapter values; agrees within the proven bound, not bit for bit).
 Part of [ml-convertant](https://github.com/ThinkersJournal/ml-convertant).
 
 `merge_lora_into_quantized` merges into a base that is already quantized (Q8_0, Q4_0, Q2_K to Q6_K): dequantize, merge,
