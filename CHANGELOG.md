@@ -4,6 +4,11 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.46]
+
+### Changed
+- Docs only: weekly patent re-sweep of 2026-11-19 recorded in `docs/PATENT-SWEEP.md` (thin: four web queries, no patent database; H29 NXP CN115759224A and H30 Huawei US11632549B2 read, both outside as read; nothing needs review). IQ2_* real-file recheck: no small public file; one 1 GB IQ2_XXS candidate noted in HANDOFF.
+
 ## [0.1.45]
 
 ### Added
