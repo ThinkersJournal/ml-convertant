@@ -60,6 +60,7 @@
   (`C:/Models/SmolLM2-360M-Instruct-GPTQ-gs64-asym`), which is Intel AutoRound's export in AutoGPTQ v1 format
   (`fbaldassarri/HuggingFaceTB_SmolLM2-360M-Instruct-auto_gptq-int4-gs64-asym` at revision
   `f3e7f293740f7b8c7b88858d4a879a90acf47b67`), against the dense `HuggingFaceTB/SmolLM2-360M-Instruct`. No weight bytes are copied into this repository.
+- Same, activation order: `C:/Models/TinyLlama-1.1B-Chat-v1.0-GPTQ-actorder` is `TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ` (AutoGPTQ, Apache-2.0 per its model card) at revision `9d4580af0f21bccafd762dcc50d0c7bac6273584`, checked against the dense `TinyLlama/TinyLlama-1.1B-Chat-v1.0` (Apache-2.0, local clone at `fe8a4ea1ffedaf415f4da2f062534de366a451e6`). Sizes and SHA-256 are pinned in `tests/golden/real_checkpoints.tsv`; no weight bytes are committed.
 
 ## Fuel awq_repack output (own code, MIT OR Apache-2.0)
 
