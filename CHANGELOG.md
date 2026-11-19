@@ -7,6 +7,7 @@ second number.
 ## [0.1.47]
 
 ### Added
+- `ml-convertant-ggml`: IQ1_S and IQ1_M decode (`dequantize_iq1_s`, `dequantize_iq1_m`, `IQ1_S_BLOCK_BYTES`, `IQ1_M_BLOCK_BYTES`, `QK_IQ1_S`, `QK_IQ1_M`), bit-identical to llama.cpp `9d57ce456c`'s `dequantize_row_iq1_s` / `_m` on 768 random blocks each covering all 2048 grid points and both shift signs. Decode only; `iq1s_grid` vendored in `iq_tables.rs` (licence and pin in `THIRD-PARTY-NOTICES.md`); CI regenerates the table and reproduces both vectors. Coverage: random-block bit-identity to ggml only; no real IQ1_* file tested. Same patent release gate as the other IQ formats.
 - Test: LoRA merge compared with weights merged by PEFT 0.22.0 itself on a real Qwen3-0.6B projection (`tests/peft_merge.rs`, standard and rsLoRA, max difference below twice our proven bound). Corpus-gated; synthetic adapter values.
 - Test: GPTQ activation-order (`desc_act=true`) checked on a real AutoGPTQ checkpoint (`TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ`) against its dense base: non-sequential `g_idx`, AWQ conversion refused, pack round trip, dequantize-with-`g_idx` matches dense (layer-0 q/k_proj have larger weight error, bound 0.5) and is clearly better than ignoring `g_idx`. Corpus-gated; AutoGPTQ's own dequantization not compared.
 

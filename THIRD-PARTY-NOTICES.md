@@ -151,6 +151,14 @@
 - What we use: the block layout, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq2_s.rs` is our own implementation; no ggml source file is in the crate. Decode only.
 - Verification: as for IQ3_XXS above: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq2_s` (`tools/golden/iq_dequant_reference.c`) is compared bit for bit on 512 random blocks covering every grid point (`crates/ml-convertant-ggml/tests/golden/iq2_s*`), reproduced by CI. gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`), Ubuntu 24.04.
 
+## ggml IQ1_S and IQ1_M decode (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `dequantize_row_iq1_s`, `dequantize_row_iq1_m`; `ggml/src/ggml-common.h`: `block_iq1_s`, `block_iq1_m`, `IQ1S_DELTA`, the table `iq1s_grid` (2048 `u64`)). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the block layouts, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq1_s.rs` and `iq1_m.rs` are our own implementations; no ggml source file is in the crate.
+- Verification: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq1_s` / `_m` (`tools/golden/iq_dequant_reference.c`) are compared bit for bit on 768 random blocks each (`crates/ml-convertant-ggml/tests/golden/iq1_*.blocks.bin`, made by `tools/golden/gen_iq_blocks.py`), covering all 2048 grid points. No real IQ1_* file is tested.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
