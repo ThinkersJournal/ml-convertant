@@ -14,7 +14,7 @@ void ggml_abort(const char*f,int l,const char*fmt,...){fprintf(stderr,"abort %s:
 /* usage: gguf_dequant_reference model.gguf spec.txt outdir
    spec.txt has one line per tensor: "<idx> <ggml_type> <abs_offset> <nbytes> <nelem>". Reads the blocks
    straight from the GGUF and writes outdir/<idx>.f32 with ggml's own dequantize_row_* output.
-   ggml_type: 16 = IQ2_XXS, 18 = IQ3_XXS, 20 = IQ4_NL, 21 = IQ3_S, 23 = IQ4_XS. */
+   ggml_type: 16 = IQ2_XXS, 18 = IQ3_XXS, 20 = IQ4_NL, 21 = IQ3_S, 23 = IQ4_XS, 19 = IQ1_S, 29 = IQ1_M. */
 int main(int argc,char**argv){
   if(argc<4)return 2;
   FILE*g=fopen(argv[1],"rb"),*s=fopen(argv[2],"r");
@@ -28,6 +28,8 @@ int main(int argc,char**argv){
     else if(ty==20)dequantize_row_iq4_nl((const block_iq4_nl*)b,d,n);
     else if(ty==21)dequantize_row_iq3_s((const block_iq3_s*)b,d,n);
     else if(ty==23)dequantize_row_iq4_xs((const block_iq4_xs*)b,d,n);
+    else if(ty==19)dequantize_row_iq1_s((const block_iq1_s*)b,d,n);
+    else if(ty==29)dequantize_row_iq1_m((const block_iq1_m*)b,d,n);
     else{fprintf(stderr,"type %ld unsupported\n",ty);return 2;}
     char p[4096];snprintf(p,sizeof p,"%s/%ld.f32",argv[3],idx);
     FILE*o=create(p);fwrite(d,4,n,o);fclose(o);free(b);free(d);}
