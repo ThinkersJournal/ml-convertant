@@ -29,6 +29,6 @@ Order follows `docs/DESIGN.md` §4. Status as of 2026-11-14.
 | 17 | Calibration: `ml-convertant-calibrate`, RTN baseline then AWQ-style scale search (`docs/CALIBRATION-DESIGN.md`; PM [TASK] 2026-11-15) | done (RTN #33, search #34; real-checkpoint tests #35, #36) |
 | 18 | IQ* formats: `IQ4_NL`, `IQ4_XS`, `IQ3_S` encoders and `IQ3_XXS`, `IQ2_XXS`, `IQ2_XS`, `IQ2_S` decoders, bit-exact vs ggml (`docs/IQ-DESIGN.md`; PM go 2026-11-16, converters only) | sweep and design merged; IQ4_NL merged; IQ4_XS merged; IQ3_S merged (#40); real-file decode check vs ggml and Fuel merged (#41); IQ3_XXS, IQ2_XXS, IQ2_XS, IQ2_S decode merged (#45, one PR; random-block bit-identity to ggml); real IQ3_XXS file checked vs ggml and Fuel (0.1.44); NO real IQ2_* file tested (rechecked weekly); IQ1_* not scheduled |
 
-**First release done:** 0.1.24 published and tagged v0.1.24 by the PM (board 307 ruled C, 2026-11-01). Both 421 rulings are implemented.
+**Releases:** 0.1.24 (first; board 307 ruled C, 2026-11-01) and 0.1.31 published and tagged (crates.io latest of every crate, read 2026-11-19; tags v0.1.24, v0.1.31). Nothing later is published. Both 421 rulings are implemented.
 
 Candidates, unscheduled (no row until the PM or CireSnave says go): safetensors glue, NF4/AWQ bases for merge-into-quantized, GPTQ repack, calibration (re-sweep patents first, H9), IQ* K-quant formats, differential for other formats.
