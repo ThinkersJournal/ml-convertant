@@ -4,7 +4,7 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
-## [Unreleased]
+## [0.1.47]
 
 ### Added
 - Test: LoRA merge compared with weights merged by PEFT 0.22.0 itself on a real Qwen3-0.6B projection (`tests/peft_merge.rs`, standard and rsLoRA, max difference below twice our proven bound). Corpus-gated; synthetic adapter values.
