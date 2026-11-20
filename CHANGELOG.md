@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.47]
+
+### Added
+- Test: LoRA merge compared with weights merged by PEFT 0.22.0 itself on a real Qwen3-0.6B projection (`tests/peft_merge.rs`, standard and rsLoRA, max difference below twice our proven bound). Corpus-gated; synthetic adapter values.
+- Test: GPTQ activation-order (`desc_act=true`) checked on a real AutoGPTQ checkpoint (`TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ`) against its dense base: non-sequential `g_idx`, AWQ conversion refused, pack round trip, dequantize-with-`g_idx` matches dense (layer-0 q/k_proj have larger weight error, bound 0.5) and is clearly better than ignoring `g_idx`. Corpus-gated; AutoGPTQ's own dequantization not compared.
+
 ## [0.1.46]
 
 ### Changed

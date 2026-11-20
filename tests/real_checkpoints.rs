@@ -484,18 +484,50 @@ fn awq_pack_order_against_dense() {
 /// leaves correlation high but shifts every value by a whole scale, which the RMSE bound catches.
 #[test]
 fn gptq_real_checkpoint_against_dense() {
-    let (Some(mut gptq), Some(mut dense)) = (
-        Safetensors::open("SmolLM2-360M-Instruct-GPTQ-gs64-asym"),
-        Safetensors::open("SmolLM2-360M-Instruct"),
-    ) else {
+    gptq_against_dense(
+        "SmolLM2-360M-Instruct-GPTQ-gs64-asym",
+        "SmolLM2-360M-Instruct",
+        64,
+        &[0, 11, 22, 31],
+        false,
+    );
+}
+
+/// Activation order (`desc_act=true`): `TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ` (AutoGPTQ, 4-bit, group 128,
+/// symmetric, `desc_act=true`, Apache-2.0) against its dense base `TinyLlama-1.1B-Chat-v1.0`. Asserts, per
+/// layer: `g_idx` is present and NOT sequential, `to_awq_logical` refuses it with the activation-order error
+/// (it must not silently drop the permutation), pack(unpack) reproduces `qweight`, and the dequantized matrix
+/// (which uses `g_idx`) matches dense within the same correlation and RMSE bounds. NOT checked: AutoGPTQ's own
+/// dequantization (no AutoGPTQ run), only agreement with the dense base up to 4-bit noise.
+#[test]
+fn gptq_act_order_real_checkpoint_against_dense() {
+    gptq_against_dense(
+        "TinyLlama-1.1B-Chat-v1.0-GPTQ-actorder",
+        "TinyLlama-1.1B-Chat-v1.0",
+        128,
+        &[0, 10, 21],
+        true,
+    );
+}
+
+fn gptq_against_dense(
+    gptq_dir: &str,
+    dense_dir: &str,
+    group_size: usize,
+    layers: &[usize],
+    act_order: bool,
+) {
+    let (Some(mut gptq), Some(mut dense)) =
+        (Safetensors::open(gptq_dir), Safetensors::open(dense_dir))
+    else {
         skipped(&format!(
-            "SmolLM2-360M-Instruct-GPTQ-gs64-asym or SmolLM2-360M-Instruct not under {}",
+            "{gptq_dir} or {dense_dir} not under {}",
             models_dir().display()
         ));
         return;
     };
     let (mut worst_corr, mut worst_rel) = (1.0f64, 0.0f64);
-    for l in [0usize, 11, 22, 31] {
+    for &l in layers {
         for p in PROJ {
             let name = format!("model.layers.{l}.{p}");
             let (qs, qweight) = gptq.u32s(&format!("{name}.qweight"));
@@ -506,7 +538,7 @@ fn gptq_real_checkpoint_against_dense() {
             let hf = HfGptq {
                 ic,
                 oc,
-                group_size: 64,
+                group_size,
                 qweight,
                 qzeros,
                 scales,
@@ -518,8 +550,25 @@ fn gptq_real_checkpoint_against_dense() {
                 hf.qweight,
                 "{name}: qweight round trip"
             );
-            to_awq_logical(&logical)
-                .unwrap_or_else(|e| panic!("{name}: {e} (g_idx is not sequential)"));
+            if act_order {
+                let g = logical
+                    .g_idx
+                    .as_ref()
+                    .expect("desc_act checkpoint has g_idx");
+                assert!(
+                    g.iter()
+                        .enumerate()
+                        .any(|(r, &x)| x as usize != r / group_size),
+                    "{name}: g_idx is sequential, so this layer is not in activation order"
+                );
+                assert!(
+                    to_awq_logical(&logical).is_err(),
+                    "{name}: an activation-order layer must not convert to AWQ"
+                );
+            } else {
+                to_awq_logical(&logical)
+                    .unwrap_or_else(|e| panic!("{name}: {e} (g_idx is not sequential)"));
+            }
             let deq = ml_convertant_gptq::dequantize_logical(&logical).unwrap();
             let (shape, w) = dense.bf16_f32(&format!("{name}.weight"));
             assert_eq!(shape, vec![oc, ic], "{name}: dense shape");
@@ -552,6 +601,23 @@ fn gptq_real_checkpoint_against_dense() {
                 .sum();
             let wss: f64 = w.iter().map(|&v| f64::from(v).powi(2)).sum();
             let rel = (sse / wss).sqrt();
+            if act_order {
+                // Control: the same codes dequantized as if g_idx were sequential. If g_idx matters (and we apply
+                // it), ignoring it must be clearly worse; otherwise this test could not tell the two apart.
+                let mut seq = logical.clone();
+                seq.g_idx = None;
+                let d2 = ml_convertant_gptq::dequantize_logical(&seq).unwrap();
+                let sse2: f64 = (0..ic)
+                    .flat_map(|i| (0..oc).map(move |o| (i, o)))
+                    .map(|(i, o)| (f64::from(d2[i * oc + o]) - f64::from(w[o * ic + i])).powi(2))
+                    .sum();
+                let rel2 = (sse2 / wss).sqrt();
+                println!("   {name}: rel rmse with g_idx ignored {rel2:.4} (applied {rel:.4})");
+                assert!(
+                    rel2 > 1.5 * rel,
+                    "{name}: ignoring g_idx is not clearly worse"
+                );
+            }
             println!(
                 "gptq l{l} {p} [{ic}x{oc}]: median row corr {median:.4}, rel rmse vs dense {rel:.4}"
             );
@@ -560,5 +626,8 @@ fn gptq_real_checkpoint_against_dense() {
         }
     }
     assert!(worst_corr > 0.9, "median row correlation {worst_corr}");
-    assert!(worst_rel < 0.25, "relative rmse {worst_rel}");
+    // Activation-order GPTQ minimizes activation-weighted error, so the unweighted weight error is larger where a
+    // few input channels dominate (measured: layer-0 q_proj 0.32, k_proj 0.45; every other layer below 0.16).
+    let max_rel = if act_order { 0.5 } else { 0.25 };
+    assert!(worst_rel < max_rel, "relative rmse {worst_rel}");
 }

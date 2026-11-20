@@ -26,15 +26,15 @@ version: `cargo run --release --example quantize_gguf -- in.gguf out.gguf q4_0`.
 | crate | status |
 |---|---|
 | `ml-convertant-core` | `ErrorReport` and the `Conversion` trait (0.1.1) |
-| `ml-convertant-ggml` | Q8_0, Q4_0, IQ4_NL, IQ4_XS and IQ3_S (importance vector optional), bit-exact vs llama.cpp `9d57ce456c` (IQ3_S except blocks with an exactly-zero sub-block, see CHANGELOG; IQ4_NL, IQ4_XS and IQ3_S unreleased: patent gate, see `docs/PATENT-SWEEP.md`) |
+| `ml-convertant-ggml` | Q8_0, Q4_0, IQ4_NL, IQ4_XS and IQ3_S (importance vector optional), bit-exact vs llama.cpp `9d57ce456c` (IQ3_S except blocks with an exactly-zero sub-block, see CHANGELOG; IQ4_NL, IQ4_XS and IQ3_S unreleased: patent gate, see `docs/PATENT-SWEEP.md`); IQ3_XXS, IQ2_XXS, IQ2_XS and IQ2_S decode only, bit-identical to the same ggml commit on random blocks, and on real files for IQ3_XXS and IQ2_XXS only (unreleased, same gate) |
 | `ml-convertant-nf4` | NF4 encode/decode and double quantization, byte-exact vs real bitsandbytes output (0.1.5) |
 | `ml-convertant-awq` | AWQ unpack/pack/repack, lossless, identical to Fuel's repack (0.1.6) |
-| `ml-convertant-gptq` | GPTQ (AutoGPTQ v1, 4-bit) unpack/pack/dequantize and conversion to the AWQ layout, lossless (unreleased) |
+| `ml-convertant-gptq` | GPTQ (AutoGPTQ v1, 4-bit) unpack/pack/dequantize and conversion to the AWQ layout, lossless (0.1.29) |
 | `ml-convertant-calibrate` | Round-to-nearest and AWQ-style scale-search quantization into the AWQ layout with weight and output error reports (search unreleased) |
 | `ml-convertant-kquants` | Q2_K to Q6_K, bit-exact vs ggml (0.1.13) |
 | `ml-convertant-mlmf` | GGUF or safetensors in, GGUF out: convert selected tensors with measured error |
 | `ml-convertant-lora` | Offline LoRA merge with a proven error bound, into f32, a quantized, NF4 or AWQ base, with adjustable strength |
-| `ml-convertant-names` | LoRA adapter tensor names, PEFT <-> GGUF, both directions; unmeasured names refused (unreleased) |
+| `ml-convertant-names` | LoRA adapter tensor names, PEFT <-> GGUF, both directions; unmeasured names refused (0.1.24) |
 
 Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
 
@@ -42,7 +42,7 @@ Design: `docs/DESIGN.md`. Licence: MIT OR Apache-2.0.
 
 **Calibrate verification limits:** `ml-convertant-calibrate` is checked against the LoRA crate's AWQ requantizer and hand-worked groups. **Not compared with a real AWQ checkpoint**; the scale search is re-derived from the paper, not compared with AutoAWQ's scales, and output error is measured, not bounded.
 
-**GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. One real GPTQ checkpoint (Intel AutoRound's AutoGPTQ-v1 export of SmolLM2-360M, gs64 asymmetric) is checked against dense weights by a corpus-gated test (correlation 0.986 to 0.996; zero offset and nibble order mutations fail); **no checkpoint from AutoGPTQ itself, and no act-order layer, has been checked**; only 4-bit, and activation-order layers are refused by the AWQ conversion.
+**GPTQ verification limits:** `ml-convertant-gptq` is checked against AutoGPTQ's documented packing re-implemented in its tests. One real GPTQ checkpoint (Intel AutoRound's AutoGPTQ-v1 export of SmolLM2-360M, gs64 asymmetric) is checked against dense weights by a corpus-gated test (correlation 0.986 to 0.996; zero offset and nibble order mutations fail); a second, act-order one (TheBloke's AutoGPTQ-made TinyLlama-1.1B-Chat-v1.0, group 128, symmetric, `desc_act=true`) is checked the same way on 3 layers: `g_idx` is non-sequential, the AWQ conversion refuses it, pack(unpack) round-trips, and dequantizing with `g_idx` agrees with dense (median row correlation 0.93 to 0.99; relative RMSE below 0.16 except layer-0 q_proj 0.32 and k_proj 0.45) while ignoring `g_idx` is at least 1.5 times worse; AutoGPTQ's own dequantization was not run; only 4-bit, and activation-order layers are refused by the AWQ conversion.
 
 **AWQ verification limits:** `ml-convertant-awq` is checked against Fuel's repack output and AutoAWQ's
-documented layout on seeded random layers. **No real AWQ checkpoint's bytes have been checked.**
+documented layout on seeded random layers. **One real AWQ checkpoint is checked:** `awq_real_checkpoint` round-trips all 196 layers of Qwen3-0.6B-AWQ (Orion-zhen, GPL-3.0, pinned) through pack/unpack and the kernel repack, and `awq_pack_order_against_dense` ties its pack order to the dense weights (above); a checkpoint's bytes were NOT compared with AutoAWQ's own code or output.
