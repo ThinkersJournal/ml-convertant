@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [Unreleased]
+
+### Added
+
+- Real-weight imatrix encode check: IQ4_NL, IQ4_XS, IQ3_S weighted encode byte-identical to ggml on 27 row groups of SmolLM2-135M-Instruct with bartowski's imatrix (`tests/real_iq_imatrix.rs`; corpus job, UNVERIFIED by CI until the corpus runner exists). Test only.
+
 ## [0.1.48]
 
 ### Added
