@@ -151,6 +151,14 @@
 - What we use: the block layout, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq2_s.rs` is our own implementation; no ggml source file is in the crate. Decode only.
 - Verification: as for IQ3_XXS above: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq2_s` (`tools/golden/iq_dequant_reference.c`) is compared bit for bit on 512 random blocks covering every grid point (`crates/ml-convertant-ggml/tests/golden/iq2_s*`), reproduced by CI. gcc 13.3 (`-O2 -DNDEBUG -ffp-contract=off`), Ubuntu 24.04.
 
+## ggml IQ1_S and IQ1_M decode (MIT), `ml-convertant-ggml`
+
+- Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
+  (`ggml/src/ggml-quants.c`: `dequantize_row_iq1_s`, `dequantize_row_iq1_m`; `ggml/src/ggml-common.h`: `block_iq1_s`, `block_iq1_m`, `IQ1S_DELTA`, the table `iq1s_grid` (2048 `u64`)). Licence: MIT, Copyright (c) 2023-2026 The ggml authors; text in
+  `tools/golden/LICENSE-ggml-MIT`.
+- What we use: the block layouts, the table (copied as data into `crates/ml-convertant-ggml/src/iq_tables.rs`, generated, carrying this origin in its header) and the decode arithmetic. `iq1_s.rs` and `iq1_m.rs` are our own implementations; no ggml source file is in the crate.
+- Verification: `tools/golden/gen_iq_tables.py` is re-run by CI on the pinned checkout and diffed against the committed file; ggml's own `dequantize_row_iq1_s` / `_m` (`tools/golden/iq_dequant_reference.c`) are compared bit for bit on 768 random blocks each (`crates/ml-convertant-ggml/tests/golden/iq1_*.blocks.bin`, made by `tools/golden/gen_iq_blocks.py`), covering all 2048 grid points. No real IQ1_* file is tested.
+
 ## ggml K-quants (MIT), `ml-convertant-kquants`
 
 - Origin: https://github.com/ggml-org/llama.cpp, commit `9d57ce456c94d241dde672b2db9cf18879766568`
@@ -200,3 +208,7 @@ Pinned by size and SHA-256 in `tests/golden/real_checkpoints.tsv`; read from the
 ## Real IQ2_XXS file used by `tests/real_iq_files.rs` (not vendored)
 
 `phi-3-mini-128k-instruct-iq2_xxs-imat.gguf` from Hugging Face `Ffftdtd5dtft/Phi-3-mini-128k-instruct-IQ2_XXS-GGUF` at revision `6f9062cabf5c9efcf3db5e9788bf3558c13f84a0` (https://huggingface.co/Ffftdtd5dtft/Phi-3-mini-128k-instruct-IQ2_XXS-GGUF): a GGUF-my-repo (llama.cpp) conversion of `microsoft/Phi-3-mini-128k-instruct`, uploaded by a **third party, not Microsoft**; licence MIT per its model card (Phi-3 itself is MIT). 1042936512 bytes, sha256 `40404c1b8b92c9e7430f117b78273981ca876f4134992cea433b6e4034fbd36a` (matches Hugging Face's own LFS hash). 124 IQ2_XXS, 5 Q2_K, 1 Q5_K and 67 F32 tensors. Read from the local corpus only; never committed; only per-tensor SHA-256 digests of ggml's decode are kept (`tests/golden/real_iq_dequant.tsv`).
+
+## Real IQ1_S file used by `tests/real_iq_files.rs` (not vendored)
+
+`tinyllama-1.1b-chat-v1.0-iq1_s-imat.gguf` from Hugging Face `Ffftdtd5dtft/TinyLlama-1.1B-Chat-v1.0-IQ1_S-GGUF` at revision `fc49f963a202539c8e256d7c395182705e47f369` (https://huggingface.co/Ffftdtd5dtft/TinyLlama-1.1B-Chat-v1.0-IQ1_S-GGUF): a GGUF-my-repo (llama.cpp) imatrix conversion of `TinyLlama/TinyLlama-1.1B-Chat-v1.0`, uploaded by a **third party, not the TinyLlama authors**; licence Apache-2.0 per its model card (the base model is Apache-2.0). 269967072 bytes, sha256 `c138e16b03d5d8c7b2012578da3be3634b683943bd9dc3c1f539dc9530dbd7db` (pinned in `tests/golden/real_iq_dequant.tsv`). Read from the local corpus only; no weight bytes are copied into this repository.

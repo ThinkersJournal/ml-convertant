@@ -4,9 +4,17 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.48]
+
+### Added
+
+- ggml IQ1_S / IQ1_M decode (no encoder); tests, docs and CI. Allocated by pm-assist 2026-11-21.
+
 ## [0.1.47]
 
 ### Added
+- `ml-convertant-ggml`: IQ1_S and IQ1_M decode (`dequantize_iq1_s`, `dequantize_iq1_m`, `IQ1_S_BLOCK_BYTES`, `IQ1_M_BLOCK_BYTES`, `QK_IQ1_S`, `QK_IQ1_M`), bit-identical to llama.cpp `9d57ce456c`'s `dequantize_row_iq1_s` / `_m` on 768 random blocks each covering all 2048 grid points and both shift signs. Decode only; `iq1s_grid` vendored in `iq_tables.rs` (licence and pin in `THIRD-PARTY-NOTICES.md`); CI regenerates the table and reproduces both vectors. Coverage: random-block bit-identity to ggml for both; IQ1_S also on a real file (below); no real IQ1_M file tested. Same patent release gate as the other IQ formats.
+- Test: `tests/real_iq_files.rs` now also decodes a real IQ1_S GGUF (`Ffftdtd5dtft/TinyLlama-1.1B-Chat-v1.0-IQ1_S-GGUF`, Apache-2.0, 269967072 bytes, sha256 `c138e16b03d5d8c7b2012578da3be3634b683943bd9dc3c1f539dc9530dbd7db`): 108 IQ1_S tensors (and 22 IQ2_XXS) bit-identical to llama.cpp `9d57ce456c`'s dequantize; Fuel has no IQ1 decoder, so ggml is the only oracle for IQ1_S. Corpus-gated.
 - Test: LoRA merge compared with weights merged by PEFT 0.22.0 itself on a real Qwen3-0.6B projection (`tests/peft_merge.rs`, standard and rsLoRA, max difference below twice our proven bound). Corpus-gated; synthetic adapter values.
 - Test: GPTQ activation-order (`desc_act=true`) checked on a real AutoGPTQ checkpoint (`TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ`) against its dense base: non-sequential `g_idx`, AWQ conversion refused, pack round trip, dequantize-with-`g_idx` matches dense (layer-0 q/k_proj have larger weight error, bound 0.5) and is clearly better than ignoring `g_idx`. Corpus-gated; AutoGPTQ's own dequantization not compared.
 
