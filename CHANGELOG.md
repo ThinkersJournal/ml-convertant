@@ -4,6 +4,12 @@ All notable changes to this workspace. One version number covers every crate (se
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Pre-1.0, a breaking change raises the
 second number.
 
+## [0.1.48]
+
+### Added
+
+- ggml IQ1_S / IQ1_M decode (no encoder); tests, docs and CI. Allocated by pm-assist 2026-11-21.
+
 ## [0.1.47]
 
 ### Added
