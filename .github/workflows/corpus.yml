@@ -49,7 +49,8 @@ jobs:
             gguf-corpus/iq-extra/smollm2-135m-instruct-iq3_xxs-imat.gguf \
             gguf-corpus/iq-extra/phi-3-mini-128k-instruct-iq2_xxs-imat.gguf \
             Qwen3-0.6B-AWQ/model.safetensors Qwen3-0.6B-dense/model.safetensors \
-            SmolLM2-360M-Instruct/model.safetensors SmolLM2-360M-Instruct-GPTQ-gs64-asym/model.safetensors \n            SmolLM2-135M-Instruct/model.safetensors imatrix/smollm2-bartowski/SmolLM2-135M-Instruct.imatrix; do
+            SmolLM2-360M-Instruct/model.safetensors SmolLM2-360M-Instruct-GPTQ-gs64-asym/model.safetensors \
+            SmolLM2-135M-Instruct/model.safetensors imatrix/smollm2-bartowski/SmolLM2-135M-Instruct.imatrix; do
             test -f "$MLCONV_MODELS_DIR/$f" || { echo "::error::missing $MLCONV_MODELS_DIR/$f"; exit 1; }
           done
       - name: Real-file tests
