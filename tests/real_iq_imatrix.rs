@@ -16,8 +16,8 @@
 
 use half::bf16;
 use ml_convertant_ggml::{
-    quantize_iq3_s, quantize_iq3_s_weighted, quantize_iq4_nl, quantize_iq4_nl_weighted, quantize_iq4_xs,
-    quantize_iq4_xs_weighted,
+    quantize_iq3_s, quantize_iq3_s_weighted, quantize_iq4_nl, quantize_iq4_nl_weighted,
+    quantize_iq4_xs, quantize_iq4_xs_weighted,
 };
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
@@ -79,7 +79,8 @@ fn sha_file(f: &mut File) -> String {
 
 #[test]
 fn iq_encode_with_real_imatrix_matches_ggml() {
-    let root = std::env::var_os("MLCONV_MODELS_DIR").map_or_else(|| PathBuf::from("C:/Models"), PathBuf::from);
+    let root = std::env::var_os("MLCONV_MODELS_DIR")
+        .map_or_else(|| PathBuf::from("C:/Models"), PathBuf::from);
     let (Ok(mut f), Ok(mut fi)) = (
         File::open(root.join(DIR).join("model.safetensors")),
         File::open(root.join(IMAT)),
@@ -91,10 +92,22 @@ fn iq_encode_with_real_imatrix_matches_ggml() {
         .map(|l| l.split('\t').collect::<Vec<_>>())
         .find(|r| r[0] == DIR)
         .expect("pin row");
-    assert_eq!(f.metadata().unwrap().len().to_string(), pin[1], "size differs from the pin");
+    assert_eq!(
+        f.metadata().unwrap().len().to_string(),
+        pin[1],
+        "size differs from the pin"
+    );
     assert_eq!(sha_file(&mut f), pin[2], "sha256 differs from the pin");
-    assert_eq!(fi.metadata().unwrap().len(), IMAT_SIZE, "imatrix size differs from the pin");
-    assert_eq!(sha_file(&mut fi), IMAT_SHA, "imatrix sha256 differs from the pin");
+    assert_eq!(
+        fi.metadata().unwrap().len(),
+        IMAT_SIZE,
+        "imatrix size differs from the pin"
+    );
+    assert_eq!(
+        sha_file(&mut fi),
+        IMAT_SHA,
+        "imatrix sha256 differs from the pin"
+    );
     let mut ib = Vec::new();
     fi.seek(SeekFrom::Start(0)).unwrap();
     fi.read_to_end(&mut ib).unwrap();
@@ -112,14 +125,21 @@ fn iq_encode_with_real_imatrix_matches_ggml() {
     let mut checked: HashMap<String, usize> = HashMap::new();
     for line in include_str!("golden/real_iq_imatrix.tsv").lines() {
         let c: Vec<&str> = line.split('\t').collect();
-        let (name, iname, first, rows, ty, want) =
-            (c[0], c[1], c[2].parse::<usize>().unwrap(), c[3].parse::<usize>().unwrap(), c[4], c[5]);
+        let (name, iname, first, rows, ty, want) = (
+            c[0],
+            c[1],
+            c[2].parse::<usize>().unwrap(),
+            c[3].parse::<usize>().unwrap(),
+            c[4],
+            c[5],
+        );
         let t = &v[name];
         assert_eq!(t["dtype"], "BF16", "{name}");
         let cols = t["shape"][1].as_u64().unwrap() as usize;
         let off = t["data_offsets"][0].as_u64().unwrap();
         let mut raw = vec![0u8; rows * cols * 2];
-        f.seek(SeekFrom::Start(8 + n + off + (first * cols * 2) as u64)).unwrap();
+        f.seek(SeekFrom::Start(8 + n + off + (first * cols * 2) as u64))
+            .unwrap();
         f.read_exact(&mut raw).unwrap();
         let x: Vec<f32> = raw
             .as_chunks::<2>()
@@ -130,9 +150,18 @@ fn iq_encode_with_real_imatrix_matches_ggml() {
         let w = &imat[iname];
         assert_eq!(w.len(), cols, "{iname}");
         let (got, plain) = match ty {
-            "IQ4_NL" => (quantize_iq4_nl_weighted(&x, Some(w)).unwrap(), quantize_iq4_nl(&x).unwrap()),
-            "IQ4_XS" => (quantize_iq4_xs_weighted(&x, Some(w)).unwrap(), quantize_iq4_xs(&x).unwrap()),
-            "IQ3_S" => (quantize_iq3_s_weighted(&x, Some(w)).unwrap(), quantize_iq3_s(&x).unwrap()),
+            "IQ4_NL" => (
+                quantize_iq4_nl_weighted(&x, Some(w)).unwrap(),
+                quantize_iq4_nl(&x).unwrap(),
+            ),
+            "IQ4_XS" => (
+                quantize_iq4_xs_weighted(&x, Some(w)).unwrap(),
+                quantize_iq4_xs(&x).unwrap(),
+            ),
+            "IQ3_S" => (
+                quantize_iq3_s_weighted(&x, Some(w)).unwrap(),
+                quantize_iq3_s(&x).unwrap(),
+            ),
             _ => panic!("type {ty}"),
         };
         assert_eq!(
