@@ -8,7 +8,7 @@
 //! `tests/golden/real_checkpoints.tsv`): q/k/o/gate/down projections of layers 0, 13 and 27, plus the embedding matrix.
 //! Selection is in `tests/golden/real_iq_encode.tsv` (tensor, first row, rows, type, SHA-256 of the bytes ggml's
 //! `quantize_iq*` wrote, from llama.cpp `9d57ce456c`; regenerate with `tools/golden/gen_real_iq_encode.py`).
-//! NOT covered: importance-matrix (imatrix) encoding on real weights; no real imatrix is paired with these tensors.
+//! imatrix encoding on real weights is `real_iq_imatrix.rs` (SmolLM2-135M); not covered here.
 //! Our encode of the same f32 values must hash identically (byte-identical output).
 
 use half::bf16;

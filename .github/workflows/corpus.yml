@@ -49,13 +49,14 @@ jobs:
             gguf-corpus/iq-extra/smollm2-135m-instruct-iq3_xxs-imat.gguf \
             gguf-corpus/iq-extra/phi-3-mini-128k-instruct-iq2_xxs-imat.gguf \
             Qwen3-0.6B-AWQ/model.safetensors Qwen3-0.6B-dense/model.safetensors \
-            SmolLM2-360M-Instruct/model.safetensors SmolLM2-360M-Instruct-GPTQ-gs64-asym/model.safetensors; do
+            SmolLM2-360M-Instruct/model.safetensors SmolLM2-360M-Instruct-GPTQ-gs64-asym/model.safetensors \
+            SmolLM2-135M-Instruct/model.safetensors imatrix/smollm2-bartowski/SmolLM2-135M-Instruct.imatrix; do
             test -f "$MLCONV_MODELS_DIR/$f" || { echo "::error::missing $MLCONV_MODELS_DIR/$f"; exit 1; }
           done
       - name: Real-file tests
         run: |
           set -o pipefail
-          cargo test --locked --release --test real_iq_files --test real_iq_encode --test peft_merge --test real_checkpoints -- --nocapture 2>&1 | tee corpus.log
+          cargo test --locked --release --test real_iq_files --test real_iq_encode --test real_iq_imatrix --test peft_merge --test real_checkpoints -- --nocapture 2>&1 | tee corpus.log
       - name: No test was skipped
         run: |
           if grep -n SKIPPED corpus.log; then echo "::error::a corpus test was skipped"; exit 1; fi
